@@ -171,7 +171,15 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: packages/warlog-mcp-proxy/package-lock.json
+          cache-dependency-path: |
+            packages/warlog-mcp-proxy/package-lock.json
+            packages/warlog-spec-ts/package-lock.json
+
+      - name: Build shared spec dependency
+        working-directory: packages/warlog-spec-ts
+        run: |
+          npm ci
+          npm run build
 
       - name: Install dependencies
         working-directory: packages/warlog-mcp-proxy
