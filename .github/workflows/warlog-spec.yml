@@ -59,7 +59,7 @@ jobs:
           git checkout --detach FETCH_HEAD
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -107,15 +107,15 @@ jobs:
           git fetch --depth=1 origin "${{ github.ref }}"
           git checkout --detach FETCH_HEAD
 
-      - name: Set up Node 22
-        uses: actions/setup-node@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: packages/warlog-spec-ts/package-lock.json
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -166,10 +166,10 @@ jobs:
           git fetch --depth=1 origin "${{ github.ref }}"
           git checkout --detach FETCH_HEAD
 
-      - name: Set up Node 22
-        uses: actions/setup-node@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: |
             packages/warlog-mcp-proxy/package-lock.json
