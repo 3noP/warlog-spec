@@ -17,16 +17,14 @@ semantic loss.
 ## Where the schemas live
 
 The canonical schemas live under `schemas/`, indexed by
-`schemas/manifest.json`. During the J-day release, the public mirror
-serves the same tree at
+`schemas/manifest.json`. The public mirror serves the same tree at
 **`https://3noP.github.io/warlog-spec/schemas/<version>/`**.
 
 - Pre-v1 : `<version>` = `draft`
 - v1.0+ : `<version>` = `v1.0`, `v1.1`, …
 
 For v0.1, the checked-in schema tree and manifest are the source of
-truth. Remote GitHub Pages URLs are verified during the release smoke
-sequence.
+truth. Remote GitHub Pages URLs are verified during release checks.
 
 ### Conformance matrix
 

@@ -47,7 +47,29 @@ orchestration, policy engine, storage, queues, and console UX remain
 part of the Warlog product. See [`docs/ADOPTION.md`](docs/ADOPTION.md)
 for the public/private boundary and the shortest external-adopter path.
 
-## Position vis-à-vis des standards existants
+## Repository model
+
+This repository is the public contract surface for Warlog and the source
+for the reference packages that implement it: `warlog-spec` on PyPI,
+`@warlog/spec` on npm, and `@warlog/mcp-proxy` for the approval-gate
+proxy layer.
+
+It is **not** a hosted product UI and it is not primarily a human-facing
+documentation site. The GitHub Pages deployment exists to serve
+canonical schema `$id` URLs under `/schemas/...` as static files so
+validators, SDKs, and downstream tooling can dereference the contract
+directly.
+
+That means the Pages root may stay minimal or even return `404` unless a
+dedicated landing page is added later. The supported public entry points
+today are:
+
+- the schema URLs under `https://3noP.github.io/warlog-spec/schemas/...`
+- `schemas/manifest.json` as the authoritative published index
+- the packaged schema bundles shipped with the Python and TypeScript
+  reference implementations
+
+## Relationship to existing standards
 
 | Layer | Standard | Warlog Spec position |
 |-------|----------|----------------------|
@@ -103,14 +125,18 @@ warlog-spec/
 
 The canonical JSON Schemas live in this directory under `schemas/`.
 `schemas/manifest.json` is the authoritative index for the v0.1 release.
-During the J-day release, the public mirror serves the same tree as
-static files from GitHub Pages at the URL pattern :
+The public Pages deployment serves the same tree as static files at the
+URL pattern:
 
 ```
 https://3noP.github.io/warlog-spec/schemas/<version>/<subdir>/<name>.json
 ```
 
-Versions :
+GitHub Pages is used here as a schema host, not as a navigable homepage.
+Schema URLs resolving correctly matters; the site root itself does not
+carry product semantics.
+
+Version channels:
 
 - `draft` — current `main` branch, evolves freely until the first
   v1.0 release. Implementations targeting `draft` MUST tolerate
@@ -126,9 +152,10 @@ A consumer pinning to a stable version uses :
 https://3noP.github.io/warlog-spec/schemas/v1.0/provider-abi/AuditRow.json
 ```
 
-For v0.1, consumers should resolve schemas from the checkout, published
-package bundle, or `schemas/manifest.json`. The remote GitHub Pages URLs
-are release artifacts, not a second source of truth.
+For v0.1, consumers should resolve schemas from a repository checkout,
+the published package bundles, or `schemas/manifest.json`. The remote
+GitHub Pages URLs are release artifacts for canonical `$id`
+dereferencing, not a second source of truth.
 
 ## Verifying conformance
 

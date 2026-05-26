@@ -1,9 +1,9 @@
 # Release Checklist
 
 Use this checklist before publishing `warlog-spec`, `@warlog/spec`, and
-`@warlog/mcp-proxy`. It is intentionally separate from the private ship
-runbook so public contributors can reproduce the quality gates without
-access to internal release credentials.
+`@warlog/mcp-proxy`. It covers the public, reproducible quality gates.
+Maintainer-only publishing steps that require private credentials are
+handled separately.
 
 ## Preflight
 
