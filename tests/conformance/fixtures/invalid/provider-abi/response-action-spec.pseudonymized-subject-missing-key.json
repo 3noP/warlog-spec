@@ -1,0 +1,15 @@
+{
+  "_comment": "Invalid: sha256_salted selectors require a 64-char lowercase hex selectorValue and selectorKeyId.",
+  "specVersion": "1.0",
+  "actionId": "user.disable",
+  "subject": {
+    "kind": "identity",
+    "selectorType": "user_principal_name",
+    "selectorValue": "alice@example.invalid",
+    "selectorRepresentation": "sha256_salted"
+  },
+  "params": {
+    "reason": "negative conformance fixture"
+  },
+  "idempotencyKey": "negative:user.disable:missing-selector-key"
+}

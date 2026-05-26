@@ -1,0 +1,47 @@
+name: RFC proposal
+description: Propose a schema, ABI, conformance, or governance change.
+title: "RFC: "
+labels: ["rfc", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for changes that alter the public contract. Small typo fixes usually belong in a PR directly.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: Schema, provider ABI, action catalog, conformance, registry, governance, docs.
+      placeholder: provider ABI
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What gap does this RFC close?
+      placeholder: Describe the current limitation and who hits it.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the proposed contract change.
+      placeholder: Include fields, enums, examples, and MUST/SHOULD/MAY language when useful.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility Impact
+      description: Is this additive, breaking, or clarification-only?
+      placeholder: Additive MINOR change; existing v0.1 examples remain valid.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence Or Prototype
+      description: Link examples, experiments, interop failures, or external standards.
+      placeholder: OCSF/STIX/OpenC2 references, failing fixture, prototype branch.

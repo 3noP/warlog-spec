@@ -1,0 +1,360 @@
+{
+  "$defs": {
+    "AuthDescriptor": {
+      "additionalProperties": false,
+      "description": "How a connector authenticates against its upstream vendor API.",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/ConnectorAuthModel"
+        },
+        "scopes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Scopes",
+          "type": "array"
+        },
+        "discoveryUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Discoveryurl"
+        }
+      },
+      "required": [
+        "model"
+      ],
+      "title": "AuthDescriptor",
+      "type": "object"
+    },
+    "ConnectorAuthModel": {
+      "description": "Supported authentication families a connector can declare.",
+      "enum": [
+        "api_key",
+        "oauth2_client_credentials",
+        "oauth2_user_delegation",
+        "mtls"
+      ],
+      "title": "ConnectorAuthModel",
+      "type": "string"
+    },
+    "ConnectorCompat": {
+      "additionalProperties": false,
+      "description": "Spec compatibility range the connector claims to support.",
+      "properties": {
+        "warlogSpecMin": {
+          "title": "Warlogspecmin",
+          "type": "string"
+        },
+        "warlogSpecMax": {
+          "title": "Warlogspecmax",
+          "type": "string"
+        }
+      },
+      "required": [
+        "warlogSpecMin",
+        "warlogSpecMax"
+      ],
+      "title": "ConnectorCompat",
+      "type": "object"
+    },
+    "ConnectorKind": {
+      "description": "High-level taxonomy for connectors.",
+      "enum": [
+        "edr",
+        "siem",
+        "iam",
+        "email",
+        "network",
+        "threat_intel",
+        "case_management",
+        "other"
+      ],
+      "title": "ConnectorKind",
+      "type": "string"
+    },
+    "DryRunDescriptor": {
+      "additionalProperties": false,
+      "description": "Dry-run capability description.",
+      "properties": {
+        "supported": {
+          "default": false,
+          "title": "Supported",
+          "type": "boolean"
+        },
+        "scope": {
+          "$ref": "#/$defs/DryRunScope",
+          "default": "none"
+        }
+      },
+      "title": "DryRunDescriptor",
+      "type": "object"
+    },
+    "DryRunScope": {
+      "description": "What a connector's dry-run mode validates.",
+      "enum": [
+        "none",
+        "egress",
+        "ingress",
+        "full"
+      ],
+      "title": "DryRunScope",
+      "type": "string"
+    },
+    "EgressDescriptor": {
+      "additionalProperties": false,
+      "description": "What response actions this connector can execute on the upstream vendor.",
+      "properties": {
+        "supportsResponseActions": {
+          "items": {
+            "$ref": "#/$defs/ResponseActionId"
+          },
+          "title": "Supportsresponseactions",
+          "type": "array"
+        }
+      },
+      "title": "EgressDescriptor",
+      "type": "object"
+    },
+    "EnrichmentDescriptor": {
+      "additionalProperties": false,
+      "description": "What canonical artifacts this connector can PRODUCE on what subjects.\n\nRead-side analogue of :class:`EgressDescriptor`. Where egress\ndeclares verbs (which response actions the connector implements),\nenrichment declares **shapes** : which canonical artifact types\nthe connector produces (the ``artifact_type`` strings that ride\nin :class:`~warlog_spec.artifacts.ArtifactEnvelope`), on which\nentity / IOC kinds it can be invoked, with what freshness, and\nwhether it supports bulk lookups.\n\nA connector with empty enrichment (default) declares \"I don't do\nread-side enrichment\" \u2014 the runtime won't route enrichment\nrequests to it. A connector with non-empty enrichment is\nexpected to implement :class:`~warlog_spec.abi.AbiEnricher`\nand return :class:`~warlog_spec.artifacts.EnrichmentAssessment`\n(or another envelope-bearing canonical shape).\n\nThe ``produces_artifact_types`` vocabulary is intentionally open\n(free-form strings) at this stage of the spec ; common values\ntoday are ``\"enrichment.context\"``, ``\"ioc.reputation\"``,\n``\"mitre.assessment\"``. A registry / enum can land later if a\ncanonical set crystallizes.",
+      "properties": {
+        "producesArtifactTypes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Producesartifacttypes",
+          "type": "array"
+        },
+        "supportsEntityTypes": {
+          "description": "EntityType values the enricher can resolve. Open list to keep the spec resilient against EntityType growth ; concrete enricher implementations MUST match values to the canonical EntityType enum at runtime.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Supportsentitytypes",
+          "type": "array"
+        },
+        "supportsIocTypes": {
+          "description": "IOCType values the enricher can resolve.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Supportsioctypes",
+          "type": "array"
+        },
+        "freshness": {
+          "$ref": "#/$defs/FreshnessHint",
+          "default": "unknown"
+        },
+        "bulkLookup": {
+          "default": false,
+          "description": "True when the enricher can accept N subjects in a single call and amortize the per-call cost. The runtime SHOULD batch subjects into bulk calls when this is True.",
+          "title": "Bulklookup",
+          "type": "boolean"
+        }
+      },
+      "title": "EnrichmentDescriptor",
+      "type": "object"
+    },
+    "FreshnessHint": {
+      "description": "Hint about how fresh the data an enricher returns is.\n\nThe runtime / orchestrator uses this to decide caching policy and\nwhether to re-query when an enriched artifact ages out. It is\nNOT a guarantee \u2014 vendors with stronger or weaker freshness can\ndocument the actual SLA in their connector's prose.",
+      "enum": [
+        "realtime",
+        "near_realtime",
+        "daily",
+        "weekly",
+        "unknown"
+      ],
+      "title": "FreshnessHint",
+      "type": "string"
+    },
+    "IngressDelivery": {
+      "description": "How a connector delivers events to the runtime.",
+      "enum": [
+        "polling",
+        "webhook",
+        "streaming"
+      ],
+      "title": "IngressDelivery",
+      "type": "string"
+    },
+    "IngressDescriptor": {
+      "additionalProperties": false,
+      "description": "What the connector pulls/receives FROM the upstream vendor.",
+      "properties": {
+        "produces": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Produces",
+          "type": "array"
+        },
+        "delivery": {
+          "$ref": "#/$defs/IngressDelivery",
+          "default": "polling"
+        },
+        "pollingMinIntervalS": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pollingminintervals"
+        }
+      },
+      "title": "IngressDescriptor",
+      "type": "object"
+    },
+    "LifecycleDescriptor": {
+      "additionalProperties": false,
+      "description": "Connector lifecycle features the runtime can rely on.",
+      "properties": {
+        "supportsHealthCheck": {
+          "default": false,
+          "title": "Supportshealthcheck",
+          "type": "boolean"
+        },
+        "supportsCredentialRotation": {
+          "default": false,
+          "title": "Supportscredentialrotation",
+          "type": "boolean"
+        },
+        "supportsPausedState": {
+          "default": false,
+          "title": "Supportspausedstate",
+          "type": "boolean"
+        }
+      },
+      "title": "LifecycleDescriptor",
+      "type": "object"
+    },
+    "ResponseActionId": {
+      "description": "Catalog of canonical, vendor-neutral atomic response actions.\n\nConnectors declare which of these they implement via\n``ConnectorCapability.egress.supports_response_actions``. New\nactions require an RFC and a MINOR spec bump.",
+      "enum": [
+        "host.isolate",
+        "host.unisolate",
+        "process.kill",
+        "process.suspend",
+        "file.quarantine",
+        "file.delete",
+        "host.restart",
+        "host.collect_artifacts",
+        "hash.block",
+        "ip.unblock",
+        "domain.unblock",
+        "url.unblock",
+        "hash.unblock",
+        "session.terminate",
+        "email.block_sender",
+        "email.unblock_sender",
+        "email.release",
+        "host.stop",
+        "host.start",
+        "host.delete",
+        "iam.role_detach",
+        "iam.role_attach",
+        "iam.credentials_disable",
+        "iam.credentials_enable",
+        "iam.credentials_rotate",
+        "key.disable",
+        "key.enable",
+        "key.rotate",
+        "key.schedule_deletion",
+        "bucket.lockdown",
+        "bucket.unlock",
+        "user.disable",
+        "user.force_logout",
+        "user.reset_mfa",
+        "user.revoke_tokens",
+        "user.reset_password",
+        "user.expire_password",
+        "user.unlock",
+        "user.group_remove",
+        "user.delete",
+        "email.quarantine",
+        "email.recall",
+        "domain.block",
+        "ip.block",
+        "url.block",
+        "cert.revoke",
+        "alert.acknowledge",
+        "case.update_status",
+        "playbook.trigger"
+      ],
+      "title": "ResponseActionId",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Declarative manifest a connector publishes about itself.\n\nA connector can be write-only (``egress`` populated, ``enrichment``\nempty), read-only (``enrichment`` populated, ``egress`` empty), or\nbi-directional (both populated). The runtime routes requests\nbased on the populated descriptors.",
+  "properties": {
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "connectorId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Connectorid",
+      "type": "string"
+    },
+    "connectorVersion": {
+      "title": "Connectorversion",
+      "type": "string"
+    },
+    "vendor": {
+      "title": "Vendor",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/ConnectorKind"
+    },
+    "auth": {
+      "$ref": "#/$defs/AuthDescriptor"
+    },
+    "ingress": {
+      "$ref": "#/$defs/IngressDescriptor"
+    },
+    "egress": {
+      "$ref": "#/$defs/EgressDescriptor"
+    },
+    "enrichment": {
+      "$ref": "#/$defs/EnrichmentDescriptor"
+    },
+    "dryRun": {
+      "$ref": "#/$defs/DryRunDescriptor"
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/LifecycleDescriptor"
+    },
+    "compat": {
+      "$ref": "#/$defs/ConnectorCompat"
+    }
+  },
+  "required": [
+    "connectorId",
+    "connectorVersion",
+    "vendor",
+    "kind",
+    "auth",
+    "compat"
+  ],
+  "title": "ConnectorCapability",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/ConnectorCapability.json"
+}

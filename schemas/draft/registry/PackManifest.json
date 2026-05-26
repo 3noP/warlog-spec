@@ -1,0 +1,271 @@
+{
+  "$defs": {
+    "PackCompat": {
+      "additionalProperties": false,
+      "description": "Spec + dependency compat declaration.",
+      "properties": {
+        "warlogSpecMin": {
+          "title": "Warlogspecmin",
+          "type": "string"
+        },
+        "warlogSpecMax": {
+          "title": "Warlogspecmax",
+          "type": "string"
+        },
+        "dependsOnPacks": {
+          "items": {
+            "$ref": "#/$defs/PackDependency"
+          },
+          "title": "Dependsonpacks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "warlogSpecMin",
+        "warlogSpecMax"
+      ],
+      "title": "PackCompat",
+      "type": "object"
+    },
+    "PackContents": {
+      "additionalProperties": false,
+      "description": "Manifest of files inside the pack archive.",
+      "properties": {
+        "detectionRules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Detectionrules",
+          "type": "array"
+        },
+        "playbooks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Playbooks",
+          "type": "array"
+        },
+        "kbArticles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Kbarticles",
+          "type": "array"
+        },
+        "connectorSpecs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Connectorspecs",
+          "type": "array"
+        },
+        "actionMappings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Actionmappings",
+          "type": "array"
+        },
+        "examples": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Examples",
+          "type": "array"
+        },
+        "tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tests",
+          "type": "array"
+        }
+      },
+      "title": "PackContents",
+      "type": "object"
+    },
+    "PackDependency": {
+      "additionalProperties": false,
+      "description": "Reference to another pack this one needs.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "title": "PackDependency",
+      "type": "object"
+    },
+    "PackKind": {
+      "description": "Five canonical pack categories.",
+      "enum": [
+        "detection",
+        "playbook",
+        "kb",
+        "connector",
+        "action"
+      ],
+      "title": "PackKind",
+      "type": "string"
+    },
+    "PackProvenance": {
+      "additionalProperties": false,
+      "description": "Supply-chain attestation for the pack.",
+      "properties": {
+        "sourceRepo": {
+          "title": "Sourcerepo",
+          "type": "string"
+        },
+        "sourceCommit": {
+          "title": "Sourcecommit",
+          "type": "string"
+        },
+        "buildAt": {
+          "format": "date-time",
+          "title": "Buildat",
+          "type": "string"
+        },
+        "sbom": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sbom"
+        },
+        "builderIdentity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Builderidentity"
+        }
+      },
+      "required": [
+        "sourceRepo",
+        "sourceCommit",
+        "buildAt"
+      ],
+      "title": "PackProvenance",
+      "type": "object"
+    },
+    "PackPublisher": {
+      "additionalProperties": false,
+      "description": "Publisher identity and signature material.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "trustLevel": {
+          "$ref": "#/$defs/TrustLevel"
+        },
+        "signature": {
+          "title": "Signature",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "trustLevel",
+        "signature"
+      ],
+      "title": "PackPublisher",
+      "type": "object"
+    },
+    "TrustLevel": {
+      "description": "Publisher trust gradient \u2014 informs default install posture per\ntenant policy.",
+      "enum": [
+        "certified",
+        "community",
+        "private"
+      ],
+      "title": "TrustLevel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Top-level manifest declared at the root of every pack archive.",
+  "properties": {
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "packId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Packid",
+      "type": "string"
+    },
+    "packVersion": {
+      "title": "Packversion",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/PackKind"
+    },
+    "publisher": {
+      "$ref": "#/$defs/PackPublisher"
+    },
+    "title": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "compat": {
+      "$ref": "#/$defs/PackCompat"
+    },
+    "license": {
+      "title": "License",
+      "type": "string"
+    },
+    "contents": {
+      "$ref": "#/$defs/PackContents"
+    },
+    "provenance": {
+      "$ref": "#/$defs/PackProvenance"
+    }
+  },
+  "required": [
+    "packId",
+    "packVersion",
+    "kind",
+    "publisher",
+    "title",
+    "description",
+    "compat",
+    "license",
+    "provenance"
+  ],
+  "title": "PackManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/registry/PackManifest.json"
+}

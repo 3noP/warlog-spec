@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-params/session.terminate.json",
+  "title": "Params for session.terminate",
+  "description": "Canonical parameters when invoking session.terminate. The session_type discriminates between layer-3/4 flow drops (firewall clear-session), VPN tunnel kills (GlobalProtect / AnyConnect / SSL-VPN), and Zero Trust app session disconnect (ZPA / Cloudflare Access / Netskope ZTNA). Connectors document which session_types they support; orchestrators must not assume any single session_type is universally available.",
+  "type": "object",
+  "properties": {
+    "session_type": {
+      "type": "string",
+      "enum": ["flow", "vpn", "ztna"],
+      "default": "flow",
+      "description": "flow: TCP/UDP flow at the firewall layer. vpn: IPsec/SSL VPN tunnel. ztna: Zero Trust app session."
+    },
+    "gateway": {
+      "type": "string",
+      "description": "Optional VPN gateway identifier (PAN-OS GP gateway name, etc.). Only meaningful for session_type='vpn'."
+    },
+    "app_id": {
+      "type": "string",
+      "description": "Optional ZTNA app identifier when scoping the disconnect to a specific app rather than all sessions for the user."
+    }
+  },
+  "additionalProperties": true
+}

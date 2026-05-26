@@ -1,0 +1,44 @@
+{
+  "_comment": "Illustrative ConnectorCapability for a SentinelOne EDR connector. Round-trip-validates against schemas/provider-abi/connector-capability.json.",
+  "specVersion": "1.0",
+  "connectorId": "sentinelone",
+  "connectorVersion": "0.4.2",
+  "vendor": "SentinelOne",
+  "kind": "edr",
+  "auth": {
+    "model": "oauth2_client_credentials",
+    "scopes": ["mgmtApi.read", "mgmtApi.respond"],
+    "discoveryUrl": "https://usea1-partners.sentinelone.net/.well-known/openid-configuration"
+  },
+  "ingress": {
+    "produces": [
+      "ocsf.detection_finding.v1.4",
+      "ocsf.process_activity.v1.4",
+      "ocsf.network_activity.v1.4"
+    ],
+    "delivery": "polling",
+    "pollingMinIntervalS": 60
+  },
+  "egress": {
+    "supportsResponseActions": [
+      "host.isolate",
+      "host.unisolate",
+      "process.kill",
+      "file.quarantine",
+      "alert.acknowledge"
+    ]
+  },
+  "dryRun": {
+    "supported": true,
+    "scope": "egress"
+  },
+  "lifecycle": {
+    "supportsHealthCheck": true,
+    "supportsCredentialRotation": true,
+    "supportsPausedState": true
+  },
+  "compat": {
+    "warlogSpecMin": "1.0.0",
+    "warlogSpecMax": "1.x"
+  }
+}

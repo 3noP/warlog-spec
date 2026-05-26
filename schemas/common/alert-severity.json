@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/AlertSeverity.json",
+  "title": "AlertSeverity",
+  "description": "Alert severity levels following CVSS-style categorization.",
+  "type": "string",
+  "enum": [
+    "critical",
+    "high",
+    "medium",
+    "low",
+    "info",
+    "unknown"
+  ]
+}

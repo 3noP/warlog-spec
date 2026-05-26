@@ -1,0 +1,79 @@
+[project]
+name = "warlog-spec"
+version = "0.1.0"
+description = "Warlog Spec — canonical workflow contract for Security Operations. Pydantic models, enums, ABI base classes, and HMAC audit-chain crypto primitives."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+authors = [
+    { name = "Warlog Spec contributors" }
+]
+keywords = ["soc", "security", "siem", "soar", "edr", "spec", "schema", "abi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    # Pydantic carries the on-the-wire shape. The version floor matches
+    # what the upstream Warlog backend pins so a single environment can
+    # satisfy both.
+    "pydantic>=2.10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/3noP/warlog-spec"
+Documentation = "https://github.com/3noP/warlog-spec"
+Repository = "https://github.com/3noP/warlog-spec"
+Changelog = "https://github.com/3noP/warlog-spec/blob/main/packages/warlog-spec-py/CHANGELOG.md"
+Issues = "https://github.com/3noP/warlog-spec/issues"
+
+[project.scripts]
+warlog-spec = "warlog_spec.conformance:_cli"
+warlog-verify = "warlog_spec.verify:_cli"
+
+[project.optional-dependencies]
+# ``pip install warlog-spec[verify]`` adds the JSON Schema validator
+# used by the conformance harness. The core package stays light — it
+# exports types and crypto primitives only.
+verify = [
+    "jsonschema>=4.18.0",
+]
+test = [
+    "httpx>=0.27.0",
+    "jsonschema>=4.18.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/warlog_spec"]
+# Bundle the per-action JSON Schemas as package data so the wheel is
+# self-contained — runtime validation does not depend on the surrounding
+# monorepo layout. ``importlib.resources.files("warlog_spec")`` resolves
+# them at runtime regardless of install mode (editable, wheel, zip).
+artifacts = [
+    "src/warlog_spec/_schemas/**/*.json",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/warlog_spec",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "examples",
+    "tests",
+]

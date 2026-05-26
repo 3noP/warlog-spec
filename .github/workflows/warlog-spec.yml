@@ -1,0 +1,178 @@
+name: Warlog Spec Checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'schemas/**'
+      - 'examples/**'
+      - 'docs/**'
+      - 'registry/**'
+      - 'rfcs/**'
+      - 'tests/conformance/**'
+      - 'packages/warlog-spec-py/**'
+      - 'packages/warlog-spec-ts/**'
+      - 'packages/warlog-mcp-proxy/**'
+      - 'README.md'
+      - 'COMPAT.md'
+      - 'VERSIONING.md'
+      - 'CHANGELOG.md'
+      - '.github/workflows/warlog-spec.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'schemas/**'
+      - 'examples/**'
+      - 'docs/**'
+      - 'registry/**'
+      - 'rfcs/**'
+      - 'tests/conformance/**'
+      - 'packages/warlog-spec-py/**'
+      - 'packages/warlog-spec-ts/**'
+      - 'packages/warlog-mcp-proxy/**'
+      - 'README.md'
+      - 'COMPAT.md'
+      - 'VERSIONING.md'
+      - 'CHANGELOG.md'
+      - '.github/workflows/warlog-spec.yml'
+
+concurrency:
+  group: warlog-spec-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  python-spec:
+    name: Python package and conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install package
+        working-directory: packages/warlog-spec-py
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m pip install -e .[test]
+
+      - name: Run Python tests
+        working-directory: packages/warlog-spec-py
+        run: python -m pytest tests -q
+
+      - name: Run Level 1 conformance
+        run: python tests/conformance/runner.py --level 1
+
+      - name: Produce and validate Level 2 fixtures
+        run: |
+          fixtures="$RUNNER_TEMP/warlog-spec-py-fixtures"
+          python -m warlog_spec.conformance dump --out "$fixtures"
+          python tests/conformance/runner.py --level 2 --fixtures-dir "$fixtures"
+
+      - name: Produce and validate Level 4 provider report
+        run: |
+          report="$RUNNER_TEMP/warlog-spec-py-provider-report.json"
+          warlog-spec provider-check --out "$report"
+          python tests/conformance/runner.py --level 4 --provider-report "$report"
+
+      - name: Build Python package
+        working-directory: packages/warlog-spec-py
+        run: python -m build --sdist --wheel
+
+  typescript-spec:
+    name: TypeScript package and conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: packages/warlog-spec-ts/package-lock.json
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Python conformance dependency
+        run: python -m pip install jsonschema
+
+      - name: Install TypeScript dependencies
+        working-directory: packages/warlog-spec-ts
+        run: npm ci
+
+      - name: Run TypeScript tests
+        working-directory: packages/warlog-spec-ts
+        run: npm test
+
+      - name: Build TypeScript package
+        working-directory: packages/warlog-spec-ts
+        run: npm run build
+
+      - name: Produce and validate Level 2 fixtures
+        working-directory: packages/warlog-spec-ts
+        run: |
+          fixtures="$RUNNER_TEMP/warlog-spec-ts-fixtures"
+          node dist/cli.js dump --out "$fixtures"
+          python ../../tests/conformance/runner.py --level 2 --fixtures-dir "$fixtures"
+
+      - name: Produce and validate Level 4 provider report
+        working-directory: packages/warlog-spec-ts
+        run: |
+          report="$RUNNER_TEMP/warlog-spec-ts-provider-report.json"
+          node dist/cli.js provider-check --out "$report"
+          python ../../tests/conformance/runner.py --level 4 --provider-report "$report"
+
+      - name: Check npm package contents
+        working-directory: packages/warlog-spec-ts
+        run: npm pack --dry-run
+
+  mcp-proxy:
+    name: MCP proxy package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: packages/warlog-mcp-proxy/package-lock.json
+
+      - name: Install dependencies
+        working-directory: packages/warlog-mcp-proxy
+        run: npm ci
+
+      - name: Run tests
+        working-directory: packages/warlog-mcp-proxy
+        run: npm test
+
+      - name: Build package
+        working-directory: packages/warlog-mcp-proxy
+        run: npm run build
+
+      - name: Check npm package contents
+        working-directory: packages/warlog-mcp-proxy
+        run: npm pack --dry-run

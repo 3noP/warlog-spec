@@ -1,0 +1,51 @@
+{
+  "_comment": "Sample PackManifest for a Warlog Certified ransomware response playbook pack. Round-trip-validates against schemas/registry/pack-manifest.json.",
+  "specVersion": "1.0",
+  "packId": "warlog-certified/ransomware-response",
+  "packVersion": "1.2.0",
+  "kind": "playbook",
+  "publisher": {
+    "id": "warlog-certified",
+    "trustLevel": "certified",
+    "signature": "ed25519:Lk7BnW9pXjK5vQrTcM2sN4zR8hY1eF6gA3uJ7iV0wD2cP4nS6tQbE3yM5xK8jL1oR7gF2hT9wQ4bA6cN3vU1eD5fG="
+  },
+  "title": "Ransomware response — 4-hour fast-track",
+  "description": "Containment + eradication playbook bundle for ransomware events. Includes: host isolation, lateral spread mapping, Volume Shadow Copy verification, victim host imaging, and stakeholder notification flow. Validated against 12 IR engagements (2024-2025).",
+  "compat": {
+    "warlogSpecMin": "1.0.0",
+    "warlogSpecMax": "1.x",
+    "dependsOnPacks": [
+      {"id": "warlog-certified/edr-baseline", "version": "^1.0"},
+      {"id": "warlog-certified/comms-templates", "version": "^2.1"}
+    ]
+  },
+  "license": "AGPL-3.0",
+  "contents": {
+    "detectionRules": [],
+    "playbooks": [
+      "playbooks/01-isolate-and-triage.json",
+      "playbooks/02-map-lateral-spread.json",
+      "playbooks/03-image-and-eradicate.json",
+      "playbooks/04-notify-stakeholders.json"
+    ],
+    "kbArticles": [
+      "kb/ransomware-fast-track-doctrine.md"
+    ],
+    "connectorSpecs": [],
+    "actionMappings": [],
+    "examples": [
+      "examples/conti-2024-replay.json",
+      "examples/lockbit-2025-replay.json"
+    ],
+    "tests": [
+      "tests/conformance/dry-run-isolation.json"
+    ]
+  },
+  "provenance": {
+    "sourceRepo": "https://github.com/warlog/warlog-certified-packs",
+    "sourceCommit": "9a3c1e5b7d2f8a6c4e9b1d3f5a7c9e1b3d5f7a9c",
+    "buildAt": "2026-05-04T18:32:11Z",
+    "sbom": "sboms/ransomware-response-1.2.0.spdx.json",
+    "builderIdentity": "https://github.com/warlog/warlog-certified-packs/.github/workflows/release.yml@refs/tags/ransomware-response-v1.2.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "_comment": "Invalid: outcome=success MUST NOT include a ConnectorError.",
+  "specVersion": "1.0",
+  "executionId": "exec-negative-success-with-error",
+  "actionId": "host.isolate",
+  "outcome": "success",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "agent-negative-001"
+  },
+  "details": {},
+  "error": {
+    "category": "transient",
+    "message": "This error is forbidden on success.",
+    "retryable": true
+  }
+}

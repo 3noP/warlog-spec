@@ -1,0 +1,16 @@
+{
+  "_comment": "ResponseActionResult after a successful host.isolate apply via the demo-edr reference connector. Round-trip-validates against schemas/provider-abi/response-action-result.json.",
+  "specVersion": "1.0",
+  "executionId": "exec-2a8b4c91-7d6e-4f5a-8c3b-19e7d2a4b6f0",
+  "actionId": "host.isolate",
+  "outcome": "success",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "agent-007"
+  },
+  "details": {
+    "vendor_task_id": "task-9a3c1e5b-7d2f-8a6c-4e9b-1d3f5a7c9e1b"
+  },
+  "error": null
+}

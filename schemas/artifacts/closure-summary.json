@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "AlertCategory": {
+      "description": "Canonical alert category.",
+      "enum": [
+        "malware",
+        "phishing",
+        "credential_access",
+        "unauthorized_access",
+        "lateral_movement",
+        "execution",
+        "persistence",
+        "exfiltration",
+        "data_breach",
+        "insider_threat",
+        "policy_violation",
+        "denial_of_service",
+        "reconnaissance",
+        "impact",
+        "other",
+        "unknown",
+        "needs_review"
+      ],
+      "title": "AlertCategory",
+      "type": "string"
+    },
+    "AlertVerdict": {
+      "description": "Final determination on alert validity.",
+      "enum": [
+        "undetermined",
+        "true_positive",
+        "false_positive",
+        "benign",
+        "suspicious",
+        "mixed",
+        "needs_review"
+      ],
+      "title": "AlertVerdict",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Explicit closure artifact produced when an alert or case is closed.\n\nAuditable record of what was concluded and why. NOT a\n:class:`CanonicalArtifact` because it predates the envelope-based\nartifact pattern in the spec \u2014 instead it carries ``schema_version``,\n``subject_type``, and ``subject_id`` directly on the body. Surfaces\non the closed alert / case so future triage of related entities\ninherits the closure context.",
+  "properties": {
+    "schemaVersion": {
+      "const": "closure_summary.v1",
+      "default": "closure_summary.v1",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "subjectType": {
+      "enum": [
+        "alert",
+        "case"
+      ],
+      "title": "Subjecttype",
+      "type": "string"
+    },
+    "subjectId": {
+      "title": "Subjectid",
+      "type": "string"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "closedBy": {
+      "title": "Closedby",
+      "type": "string"
+    },
+    "verdict": {
+      "$ref": "#/$defs/AlertVerdict"
+    },
+    "category": {
+      "$ref": "#/$defs/AlertCategory"
+    },
+    "resolutionSummary": {
+      "title": "Resolutionsummary",
+      "type": "string"
+    },
+    "falsePositiveRationale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Falsepositiverationale"
+    },
+    "suppressionRationale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Suppressionrationale"
+    },
+    "evidenceReferences": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidencereferences",
+      "type": "array"
+    }
+  },
+  "required": [
+    "subjectType",
+    "subjectId",
+    "generatedAt",
+    "closedBy",
+    "verdict",
+    "category",
+    "resolutionSummary"
+  ],
+  "title": "ClosureSummary",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/artifacts/ClosureSummary.json"
+}

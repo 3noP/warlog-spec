@@ -1,0 +1,290 @@
+{
+  "$defs": {
+    "AlertCategory": {
+      "description": "Canonical alert category.",
+      "enum": [
+        "malware",
+        "phishing",
+        "credential_access",
+        "unauthorized_access",
+        "lateral_movement",
+        "execution",
+        "persistence",
+        "exfiltration",
+        "data_breach",
+        "insider_threat",
+        "policy_violation",
+        "denial_of_service",
+        "reconnaissance",
+        "impact",
+        "other",
+        "unknown",
+        "needs_review"
+      ],
+      "title": "AlertCategory",
+      "type": "string"
+    },
+    "AlertSeverity": {
+      "description": "Alert severity levels following CVSS-style categorization.\n\n``UNKNOWN`` is a first-class persisted value: the system says\n\"unknown\" rather than guessing ``MEDIUM`` when a source does not\nprovide a mapped severity.",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ],
+      "title": "AlertSeverity",
+      "type": "string"
+    },
+    "AlertStatus": {
+      "description": "Alert lifecycle status.",
+      "enum": [
+        "new",
+        "triaging",
+        "investigating",
+        "escalated",
+        "pending",
+        "resolved",
+        "closed",
+        "suppressed"
+      ],
+      "title": "AlertStatus",
+      "type": "string"
+    },
+    "AlertVerdict": {
+      "description": "Final determination on alert validity.",
+      "enum": [
+        "undetermined",
+        "true_positive",
+        "false_positive",
+        "benign",
+        "suspicious",
+        "mixed",
+        "needs_review"
+      ],
+      "title": "AlertVerdict",
+      "type": "string"
+    },
+    "ArtifactCitation": {
+      "additionalProperties": false,
+      "description": "A pointer to evidence that supports an artifact.\n\nCitations are how downstream review can audit a producer's\nreasoning : \"this MITRE T1078 mapping was supported by event X\nsection Y at score 0.83\". The exact ``source_kind`` vocabulary is\nopen (``alert``, ``log_event``, ``threat_intel_feed``, etc.) ;\nconsumers MUST tolerate kinds they don't recognize.",
+      "properties": {
+        "sourceId": {
+          "description": "Identifier of the supporting source",
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "sourceKind": {
+          "description": "Type of supporting source",
+          "title": "Sourcekind",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional section or path",
+          "title": "Section"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "sourceId",
+        "sourceKind"
+      ],
+      "title": "ArtifactCitation",
+      "type": "object"
+    },
+    "ArtifactConfidence": {
+      "additionalProperties": false,
+      "description": "A numeric confidence score paired with a coarse-grained band.\n\nBoth fields are optional so that producers without a probabilistic\nmodel can still emit confidence (band only) and probabilistic\nproducers can emit both. Consumers read whichever is present.",
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "band": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ArtifactConfidence",
+      "type": "object"
+    },
+    "CasePriority": {
+      "description": "Case priority for SLA.",
+      "enum": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "unknown"
+      ],
+      "title": "CasePriority",
+      "type": "string"
+    },
+    "ConfidenceBand": {
+      "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ],
+      "title": "ConfidenceBand",
+      "type": "string"
+    },
+    "ProposalEnvelope": {
+      "additionalProperties": false,
+      "description": "Provenance + approval metadata around any proposal payload.\n\nDistinct from :class:`~warlog_spec.artifacts.ArtifactEnvelope` :\nwhere artifacts describe what was observed (and are passively\nconsumed), proposals carry an explicit approval contract :\n``requires_approval`` MUST be true unless a tenant policy\nauto-approves the class. ``can_mutate`` declares whether\naccepting the proposal triggers a state change (set ``False``\nfor review-only suggestions).",
+      "properties": {
+        "proposalType": {
+          "title": "Proposaltype",
+          "type": "string"
+        },
+        "proposalVersion": {
+          "default": "v1",
+          "title": "Proposalversion",
+          "type": "string"
+        },
+        "proposalId": {
+          "title": "Proposalid",
+          "type": "string"
+        },
+        "subjectType": {
+          "enum": [
+            "alert",
+            "case"
+          ],
+          "title": "Subjecttype",
+          "type": "string"
+        },
+        "subjectId": {
+          "title": "Subjectid",
+          "type": "string"
+        },
+        "requiresApproval": {
+          "default": true,
+          "title": "Requiresapproval",
+          "type": "boolean"
+        },
+        "canMutate": {
+          "default": false,
+          "title": "Canmutate",
+          "type": "boolean"
+        },
+        "confidence": {
+          "$ref": "#/$defs/ArtifactConfidence"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/ArtifactCitation"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposalType",
+        "proposalId",
+        "subjectType",
+        "subjectId",
+        "rationale"
+      ],
+      "title": "ProposalEnvelope",
+      "type": "object"
+    },
+    "TriageProposalPayload": {
+      "additionalProperties": false,
+      "description": "Body of a :class:`TriageProposal` : recommended status, severity,\nverdict, and category for an alert + optional priority hint.\n\n``should_create_case`` is the explicit escalation signal \u2014 when\nTrue the orchestrator opens (or routes into) a case. ``summary``\nis the one-line rationale surfaced on the triage queue.",
+      "properties": {
+        "recommendedStatus": {
+          "$ref": "#/$defs/AlertStatus"
+        },
+        "recommendedSeverity": {
+          "$ref": "#/$defs/AlertSeverity"
+        },
+        "recommendedVerdict": {
+          "$ref": "#/$defs/AlertVerdict"
+        },
+        "recommendedCategory": {
+          "$ref": "#/$defs/AlertCategory"
+        },
+        "shouldCreateCase": {
+          "default": false,
+          "title": "Shouldcreatecase",
+          "type": "boolean"
+        },
+        "priorityHint": {
+          "$ref": "#/$defs/CasePriority",
+          "default": "unknown"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recommendedStatus",
+        "recommendedSeverity",
+        "recommendedVerdict",
+        "recommendedCategory",
+        "summary"
+      ],
+      "title": "TriageProposalPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Envelope-wrapped triage recommendation for an alert.",
+  "properties": {
+    "envelope": {
+      "$ref": "#/$defs/ProposalEnvelope"
+    },
+    "payload": {
+      "$ref": "#/$defs/TriageProposalPayload"
+    }
+  },
+  "required": [
+    "envelope",
+    "payload"
+  ],
+  "title": "TriageProposal",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/proposals/TriageProposal.json"
+}

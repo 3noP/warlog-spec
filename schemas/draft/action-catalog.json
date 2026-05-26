@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-catalog.json",
+  "title": "Warlog Spec — canonical action catalog",
+  "description": "Per-action metadata (family, reversibility, default approval, default reviewers, optional params schema). Generated from warlog_spec.action_catalog.to_json_manifest().",
+  "spec_version": "1.0",
+  "actions": {
+    "host.isolate": {
+      "family": "device",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Isolate a host from the network (containment)."
+    },
+    "host.unisolate": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Lift host network isolation."
+    },
+    "host.restart": {
+      "family": "device",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Reboot the host (in-memory state lost)."
+    },
+    "host.collect_artifacts": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Pull a file or memory dump for forensics.",
+      "params_schema_ref": "action-params/host.collect_artifacts.json"
+    },
+    "process.kill": {
+      "family": "device",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Kill a running process (orphans children, releases handles)."
+    },
+    "process.suspend": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Suspend a running process (resumable)."
+    },
+    "file.quarantine": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Move a file to vendor quarantine (releasable)."
+    },
+    "file.delete": {
+      "family": "device",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Permanently delete a file (modulo out-of-band backups)."
+    },
+    "hash.block": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Add a SHA256 to fleet-wide prevention."
+    },
+    "user.disable": {
+      "family": "identity",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Suspend a user (work-in-progress lost)."
+    },
+    "user.force_logout": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Terminate active user sessions (no un-logout)."
+    },
+    "user.reset_mfa": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Remove enrolled MFA factors (must re-enroll)."
+    },
+    "user.revoke_tokens": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Invalidate all OAuth/refresh tokens."
+    },
+    "user.reset_password": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Force admin-initiated password reset."
+    },
+    "user.expire_password": {
+      "family": "identity",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Force password change at next login."
+    },
+    "user.unlock": {
+      "family": "identity",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Clear a user lockout state."
+    },
+    "user.group_remove": {
+      "family": "identity",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Remove user from a (typically privileged) group.",
+      "params_schema_ref": "action-params/user.group_remove.json"
+    },
+    "user.delete": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Permanently delete a user account."
+    },
+    "email.quarantine": {
+      "family": "email",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Move a delivered email to quarantine."
+    },
+    "email.recall": {
+      "family": "email",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Pull a delivered email from recipient inbox (destroys their view)."
+    },
+    "email.release": {
+      "family": "email",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Release a quarantined message back to inbox."
+    },
+    "email.block_sender": {
+      "family": "email",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Add a sender (email or domain) to the tenant blocklist."
+    },
+    "email.unblock_sender": {
+      "family": "email",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Remove a sender from the tenant blocklist."
+    },
+    "ip.block": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Block an IP at the network perimeter."
+    },
+    "ip.unblock": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Remove an IP from the network blocklist."
+    },
+    "domain.block": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Block a domain at the network perimeter."
+    },
+    "domain.unblock": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Remove a domain from the network blocklist."
+    },
+    "url.block": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Block a URL at the network perimeter."
+    },
+    "url.unblock": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Remove a URL from the network blocklist."
+    },
+    "hash.unblock": {
+      "family": "network",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Remove a SHA256 from fleet-wide prevention."
+    },
+    "session.terminate": {
+      "family": "network",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Drop an active TCP/UDP flow or VPN/ZTNA tunnel.",
+      "params_schema_ref": "action-params/session.terminate.json"
+    },
+    "cert.revoke": {
+      "family": "network",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Revoke a certificate via CRL/OCSP (must issue new cert)."
+    },
+    "host.stop": {
+      "family": "device",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Stop a compute instance (in-memory state lost, disk preserved)."
+    },
+    "host.start": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Start a stopped compute instance (inverse of host.stop)."
+    },
+    "host.delete": {
+      "family": "device",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Permanently terminate a compute instance."
+    },
+    "iam.role_detach": {
+      "family": "iam",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Detach an IAM role/policy from a principal (in-flight assumed sessions live to expiry).",
+      "params_schema_ref": "action-params/iam.role_detach.json"
+    },
+    "iam.role_attach": {
+      "family": "iam",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Attach an IAM role/policy to a principal (inverse of iam.role_detach).",
+      "params_schema_ref": "action-params/iam.role_detach.json"
+    },
+    "iam.credentials_disable": {
+      "family": "iam",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Disable an access key / service account credential.",
+      "params_schema_ref": "action-params/iam.credentials_disable.json"
+    },
+    "iam.credentials_enable": {
+      "family": "iam",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Re-enable a disabled credential (inverse of iam.credentials_disable).",
+      "params_schema_ref": "action-params/iam.credentials_disable.json"
+    },
+    "iam.credentials_rotate": {
+      "family": "iam",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Rotate credentials (old credential gone, consumers must refresh).",
+      "params_schema_ref": "action-params/iam.credentials_disable.json"
+    },
+    "key.disable": {
+      "family": "key",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Disable a KMS key (encrypted data inaccessible until re-enabled)."
+    },
+    "key.enable": {
+      "family": "key",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Re-enable a disabled KMS key (inverse of key.disable)."
+    },
+    "key.rotate": {
+      "family": "key",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Rotate a KMS key (version-add ; old versions remain valid for decrypt)."
+    },
+    "key.schedule_deletion": {
+      "family": "key",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Schedule a KMS key for permanent deletion after a cooldown.",
+      "params_schema_ref": "action-params/key.schedule_deletion.json"
+    },
+    "bucket.lockdown": {
+      "family": "storage",
+      "reversibility": "disruptive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Deny all public/external access to a bucket (active consumers break, reversible)."
+    },
+    "bucket.unlock": {
+      "family": "storage",
+      "reversibility": "reversible",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Remove lockdown artifacts imposed by bucket.lockdown (does not restore prior policy)."
+    },
+    "alert.acknowledge": {
+      "family": "workflow",
+      "reversibility": "reversible",
+      "default_approval": "none",
+      "default_reviewers": 0,
+      "summary": "Acknowledge an alert (auto-executable)."
+    },
+    "case.update_status": {
+      "family": "workflow",
+      "reversibility": "reversible",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Update the status of a case."
+    },
+    "playbook.trigger": {
+      "family": "workflow",
+      "reversibility": "varies",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Trigger a playbook (reversibility depends on body)."
+    }
+  }
+}

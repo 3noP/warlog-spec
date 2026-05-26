@@ -1,0 +1,22 @@
+{
+  "_comment": "Invalid: classification severity must use the canonical AlertSeverity enum.",
+  "envelope": {
+    "artifactType": "classification_assessment",
+    "artifactVersion": "v1",
+    "subjectType": "alert",
+    "subjectId": "alert-negative-classification",
+    "producer": {
+      "kind": "system",
+      "name": "negative-conformance"
+    },
+    "generatedAt": "2026-05-25T12:00:00Z"
+  },
+  "classification": {
+    "category": "execution",
+    "severity": "urgent",
+    "verdict": "suspicious",
+    "shouldEscalate": true,
+    "escalationRisk": "high"
+  },
+  "reasoning": "Negative conformance fixture with an out-of-range severity."
+}

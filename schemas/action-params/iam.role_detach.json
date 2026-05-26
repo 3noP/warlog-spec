@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-params/iam.role_detach.json",
+  "title": "Params for iam.role_detach",
+  "description": "Canonical parameters when detaching a role/policy from a principal. The vendor identifier shape varies (AWS PolicyArn, Azure roleAssignmentId, GCP role+member tuple) — params['policy_id'] is the abstraction. The subject.selector_value identifies the principal (user, group, service account, managed identity) ; params['policy_id'] identifies WHICH policy to detach. Connectors MAY accept additional vendor-specific keys via additionalProperties=true.",
+  "type": "object",
+  "required": ["policy_id"],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Vendor-specific policy/role identifier to detach (AWS PolicyArn, Azure roleAssignmentId fully-qualified path, GCP role string)."
+    },
+    "scope": {
+      "type": "string",
+      "description": "Optional scope at which to detach (Azure subscription/resource-group path, GCP project/folder/organization). Implementation-specific."
+    }
+  },
+  "additionalProperties": true
+}

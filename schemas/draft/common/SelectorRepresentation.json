@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/SelectorRepresentation.json",
+  "title": "SelectorRepresentation",
+  "description": "How :class:`ResponseSubject.selector_value` is encoded.",
+  "type": "string",
+  "enum": [
+    "raw",
+    "sha256",
+    "sha256_salted"
+  ]
+}

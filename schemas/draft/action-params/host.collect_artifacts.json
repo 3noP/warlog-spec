@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-params/host.collect_artifacts.json",
+  "title": "Params for host.collect_artifacts",
+  "description": "Canonical required-and-optional parameters when invoking host.collect_artifacts. Connectors MAY accept additional vendor-specific keys via additionalProperties=true.",
+  "type": "object",
+  "required": ["artifact_type"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["file", "memory"],
+      "description": "Whether to collect a file by path or a full memory dump."
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "File path on the target host. REQUIRED when artifact_type='file'; ignored otherwise."
+    },
+    "max_bytes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional ceiling on the artifact size in bytes."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"artifact_type": {"const": "file"}},
+        "required": ["artifact_type"]
+      },
+      "then": {"required": ["path"]}
+    }
+  ],
+  "additionalProperties": true
+}

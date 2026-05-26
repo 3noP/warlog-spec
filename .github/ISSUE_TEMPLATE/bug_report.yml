@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a reproducible problem in schemas, examples, docs, or reference packages.
+title: "Bug: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - JSON Schema
+        - canonical example
+        - conformance runner
+        - Python package
+        - TypeScript package
+        - MCP proxy
+        - documentation
+        - registry preview
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is wrong?
+      placeholder: The response-action-result schema accepts a payload the SDK rejects.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Commands, input JSON, package versions, and exact output.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Compatibility Or Trust Impact
+      description: Does this affect conformance claims, audit evidence, privacy, or provider behavior?
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Security Check
+      options:
+        - label: This report does not include secrets, credentials, private tenant data, or exploit details.
+          required: true

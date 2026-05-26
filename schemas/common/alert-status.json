@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/AlertStatus.json",
+  "title": "AlertStatus",
+  "description": "Alert lifecycle status.",
+  "type": "string",
+  "enum": [
+    "new",
+    "triaging",
+    "investigating",
+    "escalated",
+    "pending",
+    "resolved",
+    "closed",
+    "suppressed"
+  ]
+}

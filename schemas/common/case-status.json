@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/CaseStatus.json",
+  "title": "CaseStatus",
+  "description": "Case lifecycle status (SOC standard).",
+  "type": "string",
+  "enum": [
+    "new",
+    "investigating",
+    "containment",
+    "eradication",
+    "recovery",
+    "closed",
+    "pending_l1_info"
+  ]
+}

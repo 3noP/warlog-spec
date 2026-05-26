@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/AlertCategory.json",
+  "title": "AlertCategory",
+  "description": "Canonical alert category.",
+  "type": "string",
+  "enum": [
+    "malware",
+    "phishing",
+    "credential_access",
+    "unauthorized_access",
+    "lateral_movement",
+    "execution",
+    "persistence",
+    "exfiltration",
+    "data_breach",
+    "insider_threat",
+    "policy_violation",
+    "denial_of_service",
+    "reconnaissance",
+    "impact",
+    "other",
+    "unknown",
+    "needs_review"
+  ]
+}

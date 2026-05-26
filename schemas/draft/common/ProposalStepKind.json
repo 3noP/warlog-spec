@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/ProposalStepKind.json",
+  "title": "ProposalStepKind",
+  "description": "Kind of next-step a :class:`NextStepProposal` recommends.",
+  "type": "string",
+  "enum": [
+    "investigation",
+    "enrichment",
+    "containment",
+    "communication",
+    "escalation",
+    "closure_preparation"
+  ]
+}

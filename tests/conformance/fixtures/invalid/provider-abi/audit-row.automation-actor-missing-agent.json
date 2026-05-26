@@ -1,0 +1,39 @@
+{
+  "_comment": "Invalid: automation actors MUST include AiAgentRef provenance.",
+  "specVersion": "1.0",
+  "auditId": "audit-negative-automation",
+  "executionId": "exec-negative-automation",
+  "tenantId": "tenant-negative",
+  "actor": {
+    "kind": "automation",
+    "id": "playbook:negative"
+  },
+  "actionId": "host.isolate",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "agent-negative-004"
+  },
+  "phase": "apply",
+  "outcome": "success",
+  "startedAt": "2026-05-25T12:00:00Z",
+  "completedAt": "2026-05-25T12:00:01Z",
+  "durationMs": 1000,
+  "error": null,
+  "connector": {
+    "id": "negative-edr",
+    "version": "0.0.0"
+  },
+  "idempotencyKey": "negative:automation:missing-agent",
+  "decisionRef": {
+    "artifactType": "next_step_proposal",
+    "artifactId": "proposal-negative-automation",
+    "contentHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  "triggerSignalRef": {
+    "kind": "alert",
+    "sourceId": "alert-negative-automation",
+    "contentHash": "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+  },
+  "complianceScope": []
+}

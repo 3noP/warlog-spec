@@ -1,0 +1,85 @@
+{
+  "name": "@warlog/spec",
+  "version": "0.1.0",
+  "description": "Warlog Spec — canonical workflow contract for Security Operations. Zod schemas, types, HMAC audit-chain primitives, and 18 productible artifact factories for the TypeScript ecosystem.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "warlog-spec": "./dist/cli.js",
+    "warlog-verify": "./dist/verify-cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./conformance": {
+      "import": {
+        "types": "./dist/conformance.d.ts",
+        "default": "./dist/conformance.js"
+      },
+      "require": {
+        "types": "./dist/conformance.d.cts",
+        "default": "./dist/conformance.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "dump-fixtures": "tsx src/cli.ts dump --out ./fixtures"
+  },
+  "keywords": [
+    "soc",
+    "security",
+    "siem",
+    "soar",
+    "edr",
+    "spec",
+    "schema",
+    "abi",
+    "warlog"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/3noP/warlog-spec.git",
+    "directory": "packages/warlog-spec-ts"
+  },
+  "homepage": "https://github.com/3noP/warlog-spec",
+  "bugs": {
+    "url": "https://github.com/3noP/warlog-spec/issues"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.1",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

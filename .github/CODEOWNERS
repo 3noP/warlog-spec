@@ -1,0 +1,11 @@
+# Bootstrap CODEOWNERS for the standalone warlog-spec repository.
+# Replace @3noP with maintainer teams once the project moves under an org.
+
+* @3noP
+
+/schemas/ @3noP
+/examples/ @3noP
+/tests/conformance/ @3noP
+/rfcs/ @3noP
+/registry/ @3noP
+/docs/ @3noP

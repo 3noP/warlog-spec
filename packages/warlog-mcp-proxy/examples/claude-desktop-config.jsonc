@@ -1,0 +1,49 @@
+// Example Claude Desktop MCP configuration that audits every Okta
+// tool-call via warlog-mcp-proxy.
+//
+// macOS path : ~/Library/Application Support/Claude/claude_desktop_config.json
+// Windows path : %APPDATA%/Claude/claude_desktop_config.json
+//
+// Once installed and Claude Desktop restarted, every time Claude calls
+// an Okta tool (eg. `okta_delete_user_session`), the call is
+// transparently routed through warlog-mcp-proxy, which signs a
+// canonical AuditRow into the WARLOG_AUDIT_LOG file BEFORE forwarding
+// the call to the real okta-mcp backend.
+//
+// Secrets shown here are placeholders — replace with values from your
+// HSM / KMS / sealed-secret store.
+
+{
+  "mcpServers": {
+    "okta-audited": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@warlog/mcp-proxy",
+        "wrap",
+        "--mapping",
+        "/etc/warlog/okta-actions.yml",
+        "--strict",
+        "--",
+        "uvx",
+        "okta-mcp",
+        "--config",
+        "/etc/okta.yml"
+      ],
+      "env": {
+        // Tenant + secrets — required.
+        "WARLOG_HMAC_SECRET": "your-tenant-side-rotatable-hmac-secret",
+        "WARLOG_PII_SALT": "your-tenant-side-rotatable-pii-salt",
+        // AI agent identity (EU AI Act traceability anchor) — required.
+        "WARLOG_AGENT_MODEL": "claude-opus-4-7",
+        "WARLOG_AGENT_MODEL_VERSION": "2026-05-01",
+        "WARLOG_AGENT_SYSTEM_PROMPT_HASH": "0000000000000000000000000000000000000000000000000000000000000000",
+        "WARLOG_AGENT_RUN_ID": "claude-desktop-session-uuid",
+        "WARLOG_ACTOR_ID": "claude.desktop.session",
+        // Audit log destination — optional, defaults to
+        // ./warlog-mcp-audit.jsonl in the cwd Claude launches the proxy in.
+        "WARLOG_AUDIT_LOG": "/var/log/warlog/mcp-audit.jsonl"
+      }
+    }
+  }
+}

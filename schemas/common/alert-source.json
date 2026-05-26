@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/AlertSource.json",
+  "title": "AlertSource",
+  "description": "Alert source systems.",
+  "type": "string",
+  "enum": [
+    "siem",
+    "splunk",
+    "elasticsearch",
+    "sentinel",
+    "crowdstrike",
+    "palo_alto",
+    "fortinet",
+    "manual",
+    "api",
+    "internal",
+    "unknown"
+  ]
+}

@@ -1,0 +1,32 @@
+name: Question
+description: Ask for clarification about the spec, conformance, or adoption path.
+title: "Question: "
+labels: ["question", "needs-triage"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to understand or decide?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Tell us what you are building and which docs or files you already checked.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - adoption
+        - conformance
+        - provider ABI
+        - audit chain
+        - registry preview
+        - schemas
+        - governance
+        - other
+    validations:
+      required: true

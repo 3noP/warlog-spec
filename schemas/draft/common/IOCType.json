@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/IOCType.json",
+  "title": "IOCType",
+  "description": "Indicator of Compromise types.",
+  "type": "string",
+  "enum": [
+    "ip",
+    "ipv6",
+    "domain",
+    "url",
+    "hash_md5",
+    "hash_sha1",
+    "hash_sha256",
+    "email",
+    "user",
+    "process",
+    "registry_key",
+    "file_path",
+    "certificate",
+    "cve",
+    "other"
+  ]
+}
