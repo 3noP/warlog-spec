@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "warlog-mcp-proxy": "./dist/cli.js"
+    "warlog-mcp-proxy": "dist/cli.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -45,7 +45,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/3noP/warlog-spec.git",
+    "url": "git+https://github.com/3noP/warlog-spec.git",
     "directory": "packages/warlog-mcp-proxy"
   },
   "homepage": "https://github.com/3noP/warlog-spec/tree/main/packages/warlog-mcp-proxy",
