@@ -1,0 +1,48 @@
+{
+  "_comment": "AuditRow logging a user.revoke_tokens apply initiated by an autonomous SOC agent. The AutomationActor carries the EU AI Act traceability fields. Subject selector is pseudonymized (sha256_salted with tenant-side rotatable salt) per the GDPR PII doctrine for identity-family actions. Round-trip-validates against schemas/provider-abi/audit-row.json.",
+  "specVersion": "1.0",
+  "auditId": "audit-c4e7a216-31d8-49f1-b5a4-9d2f8c6a1e03",
+  "executionId": "exec-b3d8f504-8a2c-4b1e-9f7d-4a6b8c2e1f55",
+  "tenantId": "tenant-warlog-demo",
+  "actor": {
+    "kind": "automation",
+    "id": "agent:autonomous-soc:identity-containment-loop",
+    "agent": {
+      "model": "claude-opus-4-7",
+      "modelVersion": "2026-04-15-build-c7d2e1",
+      "systemPromptHash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+      "agentRunId": "run-7e2f1c44-9a8d-4c63-b0a1-3f5e8d7c9b21",
+      "reasoningArtifactRef": "s3://warlog-reasoning/2026/05/run-7e2f1c44-9a8d-4c63-b0a1-3f5e8d7c9b21.json"
+    }
+  },
+  "actionId": "user.revoke_tokens",
+  "subject": {
+    "kind": "identity",
+    "selectorType": "user_principal_name",
+    "selectorValue": "55a4d4a7e6f7d6e6e4e7c0a7d2d5c8b7f1a9e3d6c5b8a7e6d4c3b2a190817263",
+    "selectorRepresentation": "sha256_salted",
+    "selectorKeyId": "tenant:warlog-demo:salt:v1"
+  },
+  "phase": "apply",
+  "outcome": "success",
+  "startedAt": "2026-05-06T10:21:08.402Z",
+  "completedAt": "2026-05-06T10:21:09.118Z",
+  "durationMs": 716,
+  "error": null,
+  "connector": {
+    "id": "okta",
+    "version": "0.3.1"
+  },
+  "idempotencyKey": "case:CASE-2026-0042:user.revoke_tokens:55a4d4a7e6f7d6e6",
+  "decisionRef": {
+    "artifactType": "approval_decision",
+    "artifactId": "approval:01HK7Z8M9XQYR4VTBN2WJC5DEF:user.revoke_tokens",
+    "contentHash": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+  },
+  "triggerSignalRef": {
+    "kind": "ocsf_event",
+    "sourceId": "ocsf-event-01HK7Z8M9XQYR4VTBN2WJC5ABC",
+    "contentHash": "7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730"
+  },
+  "complianceScope": ["nis2", "gdpr"]
+}

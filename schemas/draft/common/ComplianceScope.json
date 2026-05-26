@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/ComplianceScope.json",
+  "title": "ComplianceScope",
+  "description": "Regulated perimeter an action may touch.",
+  "type": "string",
+  "enum": [
+    "nis2",
+    "dora",
+    "pci_dss_v4",
+    "sox",
+    "hds",
+    "secnumcloud",
+    "hipaa",
+    "gdpr",
+    "iso_27001"
+  ]
+}

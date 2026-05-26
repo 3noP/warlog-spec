@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "AlertCategory": {
+      "description": "Canonical alert category.",
+      "enum": [
+        "malware",
+        "phishing",
+        "credential_access",
+        "unauthorized_access",
+        "lateral_movement",
+        "execution",
+        "persistence",
+        "exfiltration",
+        "data_breach",
+        "insider_threat",
+        "policy_violation",
+        "denial_of_service",
+        "reconnaissance",
+        "impact",
+        "other",
+        "unknown",
+        "needs_review"
+      ],
+      "title": "AlertCategory",
+      "type": "string"
+    },
+    "AlertSeverity": {
+      "description": "Alert severity levels following CVSS-style categorization.\n\n``UNKNOWN`` is a first-class persisted value: the system says\n\"unknown\" rather than guessing ``MEDIUM`` when a source does not\nprovide a mapped severity.",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ],
+      "title": "AlertSeverity",
+      "type": "string"
+    },
+    "AlertVerdict": {
+      "description": "Final determination on alert validity.",
+      "enum": [
+        "undetermined",
+        "true_positive",
+        "false_positive",
+        "benign",
+        "suspicious",
+        "mixed",
+        "needs_review"
+      ],
+      "title": "AlertVerdict",
+      "type": "string"
+    },
+    "ArtifactConfidence": {
+      "additionalProperties": false,
+      "description": "A numeric confidence score paired with a coarse-grained band.\n\nBoth fields are optional so that producers without a probabilistic\nmodel can still emit confidence (band only) and probabilistic\nproducers can emit both. Consumers read whichever is present.",
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "band": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ArtifactConfidence",
+      "type": "object"
+    },
+    "ConfidenceBand": {
+      "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ],
+      "title": "ConfidenceBand",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Typed projection from a closed case back to linked alerts.\n\nProduced when a case closes and propagated to its linked alerts as\ncontext for future triage. Distinct from :class:`ClosureSummary` :\nclosure is per-subject (one alert OR one case), case-return is the\ncase \u2192 alerts fan-out summary so a future alert on the same entity\nhas historical context without reading the case's full timeline.",
+  "properties": {
+    "schemaVersion": {
+      "const": "case_return_summary.v1",
+      "default": "case_return_summary.v1",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "caseId": {
+      "title": "Caseid",
+      "type": "string"
+    },
+    "caseNumber": {
+      "title": "Casenumber",
+      "type": "string"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "finalVerdict": {
+      "$ref": "#/$defs/AlertVerdict"
+    },
+    "finalCategory": {
+      "$ref": "#/$defs/AlertCategory"
+    },
+    "finalSeverity": {
+      "$ref": "#/$defs/AlertSeverity"
+    },
+    "outcomeSummary": {
+      "title": "Outcomesummary",
+      "type": "string"
+    },
+    "rootCause": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rootcause"
+    },
+    "lessonsLearned": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lessonslearned"
+    },
+    "linkedAlertIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Linkedalertids",
+      "type": "array"
+    },
+    "confidence": {
+      "$ref": "#/$defs/ArtifactConfidence"
+    }
+  },
+  "required": [
+    "caseId",
+    "caseNumber",
+    "generatedAt",
+    "finalVerdict",
+    "finalCategory",
+    "finalSeverity",
+    "outcomeSummary"
+  ],
+  "title": "CaseReturnSummary",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/artifacts/CaseReturnSummary.json"
+}

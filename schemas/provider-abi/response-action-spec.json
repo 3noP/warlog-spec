@@ -1,0 +1,247 @@
+{
+  "$defs": {
+    "ApprovalDescriptor": {
+      "additionalProperties": false,
+      "description": "Approval gate metadata for a response action request.",
+      "properties": {
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "level": {
+          "$ref": "#/$defs/ApprovalLevel",
+          "default": "analyst"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rationale"
+      ],
+      "title": "ApprovalDescriptor",
+      "type": "object"
+    },
+    "ApprovalLevel": {
+      "description": "Required approval level before an action executes.",
+      "enum": [
+        "none",
+        "analyst",
+        "senior",
+        "manager"
+      ],
+      "title": "ApprovalLevel",
+      "type": "string"
+    },
+    "ResponseActionId": {
+      "description": "Catalog of canonical, vendor-neutral atomic response actions.\n\nConnectors declare which of these they implement via\n``ConnectorCapability.egress.supports_response_actions``. New\nactions require an RFC and a MINOR spec bump.",
+      "enum": [
+        "host.isolate",
+        "host.unisolate",
+        "process.kill",
+        "process.suspend",
+        "file.quarantine",
+        "file.delete",
+        "host.restart",
+        "host.collect_artifacts",
+        "hash.block",
+        "ip.unblock",
+        "domain.unblock",
+        "url.unblock",
+        "hash.unblock",
+        "session.terminate",
+        "email.block_sender",
+        "email.unblock_sender",
+        "email.release",
+        "host.stop",
+        "host.start",
+        "host.delete",
+        "iam.role_detach",
+        "iam.role_attach",
+        "iam.credentials_disable",
+        "iam.credentials_enable",
+        "iam.credentials_rotate",
+        "key.disable",
+        "key.enable",
+        "key.rotate",
+        "key.schedule_deletion",
+        "bucket.lockdown",
+        "bucket.unlock",
+        "user.disable",
+        "user.force_logout",
+        "user.reset_mfa",
+        "user.revoke_tokens",
+        "user.reset_password",
+        "user.expire_password",
+        "user.unlock",
+        "user.group_remove",
+        "user.delete",
+        "email.quarantine",
+        "email.recall",
+        "domain.block",
+        "ip.block",
+        "url.block",
+        "cert.revoke",
+        "alert.acknowledge",
+        "case.update_status",
+        "playbook.trigger"
+      ],
+      "title": "ResponseActionId",
+      "type": "string"
+    },
+    "ResponseActionScope": {
+      "description": "Where a response action operates.",
+      "enum": [
+        "endpoint",
+        "identity",
+        "network",
+        "mail",
+        "pki",
+        "platform"
+      ],
+      "title": "ResponseActionScope",
+      "type": "string"
+    },
+    "ResponseSubject": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "selectorRepresentation": {
+                "enum": [
+                  "sha256",
+                  "sha256_salted"
+                ]
+              }
+            },
+            "required": [
+              "selectorRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "selectorValue": {
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "selectorKeyId": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "selectorKeyId"
+            ]
+          }
+        }
+      ],
+      "description": "Identifies the target of a response action.\n\n``selector_representation`` indicates whether ``selector_value`` is\nthe raw identifier or a hashed/pseudonymized form. When the value\nis pseudonymized (``sha256`` or ``sha256_salted``), ``selector_key_id``\nis REQUIRED so consumers can resolve the hash domain or rotation\nepoch. Doctrine : actions in PII-bearing families (identity, email,\niam) MUST use ``sha256_salted`` \u2014 the runtime enforces this gate.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ResponseActionScope"
+        },
+        "selectorType": {
+          "title": "Selectortype",
+          "type": "string"
+        },
+        "selectorValue": {
+          "title": "Selectorvalue",
+          "type": "string"
+        },
+        "selectorRepresentation": {
+          "$ref": "#/$defs/SelectorRepresentation",
+          "default": "raw"
+        },
+        "selectorKeyId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Identifier of the hash domain or rotatable salt. REQUIRED when selector_representation is sha256 or sha256_salted. Format is operator-defined; common pattern is 'tenant:<id>:salt:v<N>'.",
+          "title": "Selectorkeyid"
+        }
+      },
+      "required": [
+        "kind",
+        "selectorType",
+        "selectorValue"
+      ],
+      "title": "ResponseSubject",
+      "type": "object"
+    },
+    "SelectorRepresentation": {
+      "description": "How :class:`ResponseSubject.selector_value` is encoded.\n\nLets the audit chain stay append-only without violating the GDPR\nright-to-erasure for PII identifiers (user emails, UPNs, ...).\nThe actual identifier is hashed at the producer side ; the audit\nrow carries the hash + a key reference so a tenant-side rotatable\nsalt lookup can still resolve it within a defined retention window.\n\n- ``RAW`` : ``selector_value`` is the identifier verbatim. Safe\n  for non-PII selectors (agent_ids, host UUIDs, bucket names).\n- ``SHA256`` : ``selector_value`` is the lowercase-hex sha256\n  digest of the identifier. Reversible only via brute force\n  over the input space. ``selector_key_id`` MUST identify the\n  hash domain (e.g. ``tenant:T-001:domain:user_principal_name``)\n  so consumers don't accidentally compare hashes from different\n  domains.\n- ``SHA256_SALTED`` : ``selector_value`` is the lowercase-hex\n  sha256 digest of ``salt || identifier``. The salt is stored\n  tenant-side in a rotatable secret store ; rotating the salt\n  makes pre-rotation hashes effectively non-reversible (de-facto\n  erasure). ``selector_key_id`` identifies the salt + version\n  (e.g. ``tenant:T-001:salt:v3``).\n\nDoctrine : actions in families ``identity`` / ``email`` / ``iam``\nMUST use ``SHA256_SALTED`` when the upstream identifier carries\nPII. The runtime enforces this gate before any audit row is\nsigned \u2014 see ``AbiRunner`` PII enforcement.",
+      "enum": [
+        "raw",
+        "sha256",
+        "sha256_salted"
+      ],
+      "title": "SelectorRepresentation",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A request to execute a response action.",
+  "properties": {
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "actionId": {
+      "$ref": "#/$defs/ResponseActionId"
+    },
+    "subject": {
+      "$ref": "#/$defs/ResponseSubject"
+    },
+    "params": {
+      "additionalProperties": true,
+      "title": "Params",
+      "type": "object"
+    },
+    "approval": {
+      "$ref": "#/$defs/ApprovalDescriptor"
+    },
+    "dryRun": {
+      "default": false,
+      "title": "Dryrun",
+      "type": "boolean"
+    },
+    "idempotencyKey": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Idempotencykey",
+      "type": "string"
+    },
+    "expiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expiresat"
+    }
+  },
+  "required": [
+    "actionId",
+    "subject",
+    "idempotencyKey"
+  ],
+  "title": "ResponseActionSpec",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/ResponseActionSpec.json"
+}

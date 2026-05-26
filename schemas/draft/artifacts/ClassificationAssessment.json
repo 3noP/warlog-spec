@@ -1,0 +1,315 @@
+{
+  "$defs": {
+    "AlertCategory": {
+      "description": "Canonical alert category.",
+      "enum": [
+        "malware",
+        "phishing",
+        "credential_access",
+        "unauthorized_access",
+        "lateral_movement",
+        "execution",
+        "persistence",
+        "exfiltration",
+        "data_breach",
+        "insider_threat",
+        "policy_violation",
+        "denial_of_service",
+        "reconnaissance",
+        "impact",
+        "other",
+        "unknown",
+        "needs_review"
+      ],
+      "title": "AlertCategory",
+      "type": "string"
+    },
+    "AlertSeverity": {
+      "description": "Alert severity levels following CVSS-style categorization.\n\n``UNKNOWN`` is a first-class persisted value: the system says\n\"unknown\" rather than guessing ``MEDIUM`` when a source does not\nprovide a mapped severity.",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ],
+      "title": "AlertSeverity",
+      "type": "string"
+    },
+    "AlertVerdict": {
+      "description": "Final determination on alert validity.",
+      "enum": [
+        "undetermined",
+        "true_positive",
+        "false_positive",
+        "benign",
+        "suspicious",
+        "mixed",
+        "needs_review"
+      ],
+      "title": "AlertVerdict",
+      "type": "string"
+    },
+    "ArtifactCitation": {
+      "additionalProperties": false,
+      "description": "A pointer to evidence that supports an artifact.\n\nCitations are how downstream review can audit a producer's\nreasoning : \"this MITRE T1078 mapping was supported by event X\nsection Y at score 0.83\". The exact ``source_kind`` vocabulary is\nopen (``alert``, ``log_event``, ``threat_intel_feed``, etc.) ;\nconsumers MUST tolerate kinds they don't recognize.",
+      "properties": {
+        "sourceId": {
+          "description": "Identifier of the supporting source",
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "sourceKind": {
+          "description": "Type of supporting source",
+          "title": "Sourcekind",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional section or path",
+          "title": "Section"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "sourceId",
+        "sourceKind"
+      ],
+      "title": "ArtifactCitation",
+      "type": "object"
+    },
+    "ArtifactConfidence": {
+      "additionalProperties": false,
+      "description": "A numeric confidence score paired with a coarse-grained band.\n\nBoth fields are optional so that producers without a probabilistic\nmodel can still emit confidence (band only) and probabilistic\nproducers can emit both. Consumers read whichever is present.",
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "band": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ArtifactConfidence",
+      "type": "object"
+    },
+    "ArtifactEnvelope": {
+      "additionalProperties": false,
+      "description": "Canonical envelope every read-side artifact rides in.\n\nThe ``artifact_type`` string identifies WHAT was produced (an\nenrichment, a classification, a MITRE assessment, ...). The\n``subject_*`` fields identify what it's ABOUT (an alert or a\ncase). Producer / confidence / citations carry HOW it was made.\nThe actual payload of the artifact lives outside the envelope \u2014\ntyped assessment classes (``ClassificationAssessment``,\n``MitreAssessment``, ``EnrichmentAssessment``) compose the\nenvelope with their specific payload.\n\nThis is the read-side analogue of :class:`warlog_spec.provider_abi.AuditRow`\non the write side : a uniform envelope shape that audit, review,\nand surface tooling can consume without knowing the producer.",
+      "properties": {
+        "artifactType": {
+          "title": "Artifacttype",
+          "type": "string"
+        },
+        "artifactVersion": {
+          "default": "v1",
+          "title": "Artifactversion",
+          "type": "string"
+        },
+        "subjectType": {
+          "enum": [
+            "alert",
+            "case"
+          ],
+          "title": "Subjecttype",
+          "type": "string"
+        },
+        "subjectId": {
+          "title": "Subjectid",
+          "type": "string"
+        },
+        "producer": {
+          "$ref": "#/$defs/ArtifactProducer"
+        },
+        "generatedAt": {
+          "format": "date-time",
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/ArtifactConfidence"
+        },
+        "reviewState": {
+          "$ref": "#/$defs/ArtifactReviewState",
+          "default": "pending"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/ArtifactCitation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "artifactType",
+        "subjectType",
+        "subjectId",
+        "producer",
+        "generatedAt"
+      ],
+      "title": "ArtifactEnvelope",
+      "type": "object"
+    },
+    "ArtifactProducer": {
+      "additionalProperties": false,
+      "description": "Who or what generated an artifact.\n\nThe five kinds map cleanly to the provenance categories that\nmatter for downstream review : human-authored, rule-based,\nML-model-output, LLM-output, or system-internal (e.g. an\nauto-correlator).",
+      "properties": {
+        "kind": {
+          "enum": [
+            "llm",
+            "rule",
+            "ml",
+            "human",
+            "system"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "ArtifactProducer",
+      "type": "object"
+    },
+    "ArtifactReviewState": {
+      "description": "Lifecycle state of a produced artifact through human review.\n\nA connector emits artifacts in ``PENDING`` ; analysts move them\nthrough ``ACCEPTED`` / ``REJECTED``. ``SUPERSEDED`` covers the\ncase where a fresher artifact about the same subject replaces an\nolder one (e.g. a re-enrichment after the IOC verdict flipped).",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "superseded"
+      ],
+      "title": "ArtifactReviewState",
+      "type": "string"
+    },
+    "ClassificationDecision": {
+      "additionalProperties": false,
+      "description": "Triage-time classification : category / severity / verdict /\nescalation recommendation.\n\nProduced by classifier models or rule-based scorers ; consumed by\nthe triage proposal layer + the alert surface. ``escalation_risk``\nis a coarse-grained band rather than a numeric score because it\ndrives a UI badge, not a routing decision.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/AlertCategory",
+          "default": "unknown"
+        },
+        "severity": {
+          "$ref": "#/$defs/AlertSeverity",
+          "default": "unknown"
+        },
+        "verdict": {
+          "$ref": "#/$defs/AlertVerdict",
+          "default": "undetermined"
+        },
+        "shouldEscalate": {
+          "default": false,
+          "title": "Shouldescalate",
+          "type": "boolean"
+        },
+        "escalationRisk": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ClassificationDecision",
+      "type": "object"
+    },
+    "ConfidenceBand": {
+      "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ],
+      "title": "ConfidenceBand",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Envelope-wrapped triage classification.\n\nProduced by a classifier (rule, ML, or LLM) at triage time and\nsurfaced to the analyst alongside the alert. ``evidence_summary``\nis the short rationale ; ``missing_evidence`` declares what the\nclassifier would need to raise its confidence (used by an\norchestrator to decide whether to schedule an enrichment).",
+  "properties": {
+    "envelope": {
+      "$ref": "#/$defs/ArtifactEnvelope"
+    },
+    "classification": {
+      "$ref": "#/$defs/ClassificationDecision"
+    },
+    "reasoning": {
+      "title": "Reasoning",
+      "type": "string"
+    },
+    "evidenceSummary": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidencesummary",
+      "type": "array"
+    },
+    "missingEvidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missingevidence",
+      "type": "array"
+    }
+  },
+  "required": [
+    "envelope",
+    "classification",
+    "reasoning"
+  ],
+  "title": "ClassificationAssessment",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/artifacts/ClassificationAssessment.json"
+}

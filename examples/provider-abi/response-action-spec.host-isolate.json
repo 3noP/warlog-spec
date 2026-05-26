@@ -1,0 +1,22 @@
+{
+  "_comment": "ResponseActionSpec requesting endpoint isolation. Round-trip-validates against schemas/provider-abi/response-action-spec.json.",
+  "specVersion": "1.0",
+  "actionId": "host.isolate",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "01HK7Z8M9XQYR4VTBN2WJC5XYZ"
+  },
+  "params": {
+    "reason": "C2 callback detected; analyst-confirmed compromise",
+    "preserve_management_connection": true
+  },
+  "approval": {
+    "required": true,
+    "level": "analyst",
+    "rationale": "EDR alert + manual L2 review; standard analyst-approved containment per playbook PB-001."
+  },
+  "dryRun": false,
+  "idempotencyKey": "case:CASE-2026-0042:host.isolate:01HK7Z8M9XQYR4VTBN2WJC5XYZ",
+  "expiresAt": "2026-05-06T11:14:37.421Z"
+}

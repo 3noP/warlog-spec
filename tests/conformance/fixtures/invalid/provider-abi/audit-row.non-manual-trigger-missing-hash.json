@@ -1,0 +1,39 @@
+{
+  "_comment": "Invalid: non-manual trigger signals require non-empty sourceId and 64-char hex contentHash.",
+  "specVersion": "1.0",
+  "auditId": "audit-negative-trigger",
+  "executionId": "exec-negative-trigger",
+  "tenantId": "tenant-negative",
+  "actor": {
+    "kind": "human",
+    "id": "analyst@example.invalid"
+  },
+  "actionId": "host.isolate",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "agent-negative-003"
+  },
+  "phase": "apply",
+  "outcome": "success",
+  "startedAt": "2026-05-25T12:00:00Z",
+  "completedAt": "2026-05-25T12:00:01Z",
+  "durationMs": 1000,
+  "error": null,
+  "connector": {
+    "id": "negative-edr",
+    "version": "0.0.0"
+  },
+  "idempotencyKey": "negative:trigger:missing-hash",
+  "decisionRef": {
+    "artifactType": "next_step_proposal",
+    "artifactId": "proposal-negative-trigger",
+    "contentHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  "triggerSignalRef": {
+    "kind": "alert",
+    "sourceId": "",
+    "contentHash": ""
+  },
+  "complianceScope": []
+}

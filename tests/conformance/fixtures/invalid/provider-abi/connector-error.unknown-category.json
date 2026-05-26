@@ -1,0 +1,7 @@
+{
+  "_comment": "Invalid: connector errors must map vendor behavior into the normalized failure categories.",
+  "specVersion": "1.0",
+  "category": "vendor_oops",
+  "message": "Unnormalized vendor category must be rejected.",
+  "retryable": false
+}

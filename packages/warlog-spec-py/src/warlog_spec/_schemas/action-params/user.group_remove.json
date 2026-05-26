@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-params/user.group_remove.json",
+  "title": "Params for user.group_remove",
+  "description": "Canonical parameters when invoking user.group_remove. Removing a user from a group is a per-group operation — there is no IAM-portable 'all privileged groups' selector. The orchestrator resolves the privileged-group set upstream and invokes this action once per group.",
+  "type": "object",
+  "required": ["group_id"],
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The vendor-side group identifier (Okta groupId, Azure AD object id, Google Workspace group key, AD distinguishedName)."
+    }
+  },
+  "additionalProperties": true
+}

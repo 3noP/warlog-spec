@@ -1,0 +1,78 @@
+# Example warlog-mcp-proxy mapping for an Okta MCP backend.
+#
+# Place at /etc/warlog/okta-actions.yml (or anywhere the WARLOG_*
+# environment can point to) and reference it via the proxy's
+# --mapping flag :
+#
+#     warlog-mcp-proxy wrap \
+#         --mapping /etc/warlog/okta-actions.yml \
+#         --strict \
+#         -- \
+#         uvx okta-mcp --config /etc/okta.yml
+#
+# Doctrine — every MCP tool that issues a state-changing action MUST be
+# mapped explicitly. Fuzzy/automatic matching is intentionally not
+# supported : the proxy is the cryptographic notary of your AI agent's
+# actions, and the action_id that lands in the audit chain comes from
+# THIS file. An RSSI or auditor reviews this file in Git to certify the
+# proxy's behavior.
+
+spec_version: "1.0"
+tenant_id: "acme-eu"
+connector_id: "mcp.okta_proxy"
+connector_version: "0.1.0"
+selector_key_id: "tenant:acme-eu:salt:v3"
+
+tool_mappings:
+  # Identity-family tools — subject is a user identifier, so the proxy
+  # will pseudonymize it (sha256(salt || value)) before signing.
+
+  okta_delete_user_session:
+    action_id: "user.revoke_tokens"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr", "nis2"]
+    approval:
+      required: true
+      state: "pending"
+      level: "senior"
+      rationale: "Senior analyst approval required before token revocation."
+
+  okta_disable_user:
+    action_id: "user.disable"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr", "nis2"]
+    approval:
+      required: true
+      state: "pending"
+      level: "senior"
+      rationale: "Senior analyst approval required before disabling an identity."
+
+  okta_force_logout:
+    action_id: "user.force_logout"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr"]
+
+  okta_reset_mfa:
+    action_id: "user.reset_mfa"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr"]
+
+  okta_reset_password:
+    action_id: "user.reset_password"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr"]
+
+  okta_remove_from_group:
+    action_id: "user.group_remove"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr", "nis2"]
+
+  okta_delete_user:
+    action_id: "user.delete"
+    subject_param: "user_id"
+    compliance_scope: ["gdpr", "nis2"]
+    approval:
+      required: true
+      state: "denied"
+      level: "manager"
+      rationale: "User deletion is not permitted through this MCP surface."

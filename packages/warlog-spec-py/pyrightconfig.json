@@ -1,0 +1,11 @@
+{
+  "include": ["src", "tests", "examples"],
+  "exclude": ["**/__pycache__", "**/node_modules", "**/.*"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+
+  "extraPaths": ["src"],
+
+  "reportMissingTypeStubs": false,
+  "reportUnusedImport": "warning"
+}

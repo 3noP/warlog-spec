@@ -1,0 +1,392 @@
+{
+  "$defs": {
+    "AcceptedRisk": {
+      "additionalProperties": false,
+      "description": "A specific risk the arbitration explicitly accepts.\n\nForces the substrate to name what it accepts rather than carry\na generic free-form rationale. Auditors can map accepted risks\nto a risk register independent of the prose justification.",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "title": "AcceptedRisk",
+      "type": "object"
+    },
+    "ArbitrationAuthority": {
+      "additionalProperties": false,
+      "description": "Who signed a :class:`RiskArbitration`.\n\nThe role is structured (CISO, DRO, manager, \u2026) so audit queries\ncan filter by signing authority. ``signer_id`` is the SSO sub /\nemployee id ; ``signer_name`` is the displayable form persisted\nat signing time (so the row stays auditable even if the user\nobject is later updated or deleted).",
+      "properties": {
+        "role": {
+          "enum": [
+            "ciso",
+            "dro",
+            "dpo",
+            "manager",
+            "senior_analyst",
+            "service_owner",
+            "other"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "signerId": {
+          "minLength": 1,
+          "title": "Signerid",
+          "type": "string"
+        },
+        "signerName": {
+          "minLength": 1,
+          "title": "Signername",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "signerId",
+        "signerName"
+      ],
+      "title": "ArbitrationAuthority",
+      "type": "object"
+    },
+    "ArbitrationScope": {
+      "additionalProperties": false,
+      "description": "A scope an arbitration applies to.\n\nMultiple scopes per arbitration are allowed \u2014 a single d\u00e9rogation\nmay cover several hosts, a whole business unit, or a regulated\nperimeter. ``scope_kind`` is open so the substrate is not locked\nto a fixed taxonomy (cloud accounts, business units, asset\ngroups, etc.).",
+      "properties": {
+        "scopeKind": {
+          "description": "Open vocabulary: 'host', 'business_unit', 'asset_group', 'compliance_perimeter', 'tenant', \u2026",
+          "minLength": 1,
+          "title": "Scopekind",
+          "type": "string"
+        },
+        "selectorValue": {
+          "minLength": 1,
+          "title": "Selectorvalue",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scopeKind",
+        "selectorValue"
+      ],
+      "title": "ArbitrationScope",
+      "type": "object"
+    },
+    "ArtifactCitation": {
+      "additionalProperties": false,
+      "description": "A pointer to evidence that supports an artifact.\n\nCitations are how downstream review can audit a producer's\nreasoning : \"this MITRE T1078 mapping was supported by event X\nsection Y at score 0.83\". The exact ``source_kind`` vocabulary is\nopen (``alert``, ``log_event``, ``threat_intel_feed``, etc.) ;\nconsumers MUST tolerate kinds they don't recognize.",
+      "properties": {
+        "sourceId": {
+          "description": "Identifier of the supporting source",
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "sourceKind": {
+          "description": "Type of supporting source",
+          "title": "Sourcekind",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional section or path",
+          "title": "Section"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "sourceId",
+        "sourceKind"
+      ],
+      "title": "ArtifactCitation",
+      "type": "object"
+    },
+    "ArtifactConfidence": {
+      "additionalProperties": false,
+      "description": "A numeric confidence score paired with a coarse-grained band.\n\nBoth fields are optional so that producers without a probabilistic\nmodel can still emit confidence (band only) and probabilistic\nproducers can emit both. Consumers read whichever is present.",
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "band": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ArtifactConfidence",
+      "type": "object"
+    },
+    "ArtifactEnvelope": {
+      "additionalProperties": false,
+      "description": "Canonical envelope every read-side artifact rides in.\n\nThe ``artifact_type`` string identifies WHAT was produced (an\nenrichment, a classification, a MITRE assessment, ...). The\n``subject_*`` fields identify what it's ABOUT (an alert or a\ncase). Producer / confidence / citations carry HOW it was made.\nThe actual payload of the artifact lives outside the envelope \u2014\ntyped assessment classes (``ClassificationAssessment``,\n``MitreAssessment``, ``EnrichmentAssessment``) compose the\nenvelope with their specific payload.\n\nThis is the read-side analogue of :class:`warlog_spec.provider_abi.AuditRow`\non the write side : a uniform envelope shape that audit, review,\nand surface tooling can consume without knowing the producer.",
+      "properties": {
+        "artifactType": {
+          "title": "Artifacttype",
+          "type": "string"
+        },
+        "artifactVersion": {
+          "default": "v1",
+          "title": "Artifactversion",
+          "type": "string"
+        },
+        "subjectType": {
+          "enum": [
+            "alert",
+            "case"
+          ],
+          "title": "Subjecttype",
+          "type": "string"
+        },
+        "subjectId": {
+          "title": "Subjectid",
+          "type": "string"
+        },
+        "producer": {
+          "$ref": "#/$defs/ArtifactProducer"
+        },
+        "generatedAt": {
+          "format": "date-time",
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/ArtifactConfidence"
+        },
+        "reviewState": {
+          "$ref": "#/$defs/ArtifactReviewState",
+          "default": "pending"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/ArtifactCitation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "artifactType",
+        "subjectType",
+        "subjectId",
+        "producer",
+        "generatedAt"
+      ],
+      "title": "ArtifactEnvelope",
+      "type": "object"
+    },
+    "ArtifactProducer": {
+      "additionalProperties": false,
+      "description": "Who or what generated an artifact.\n\nThe five kinds map cleanly to the provenance categories that\nmatter for downstream review : human-authored, rule-based,\nML-model-output, LLM-output, or system-internal (e.g. an\nauto-correlator).",
+      "properties": {
+        "kind": {
+          "enum": [
+            "llm",
+            "rule",
+            "ml",
+            "human",
+            "system"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "ArtifactProducer",
+      "type": "object"
+    },
+    "ArtifactReviewState": {
+      "description": "Lifecycle state of a produced artifact through human review.\n\nA connector emits artifacts in ``PENDING`` ; analysts move them\nthrough ``ACCEPTED`` / ``REJECTED``. ``SUPERSEDED`` covers the\ncase where a fresher artifact about the same subject replaces an\nolder one (e.g. a re-enrichment after the IOC verdict flipped).",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "superseded"
+      ],
+      "title": "ArtifactReviewState",
+      "type": "string"
+    },
+    "ConfidenceBand": {
+      "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ],
+      "title": "ConfidenceBand",
+      "type": "string"
+    },
+    "PolicyRef": {
+      "additionalProperties": false,
+      "description": "Pointer to a policy, playbook, or doctrine document.\n\nOpen ``policy_kind`` vocabulary so the spec doesn't lock the\nsubstrate into a single doctrine-repository format. Common\nvalues today : ``\"playbook\"``, ``\"policy_document\"``,\n``\"doctrine_kb\"``, ``\"derogation\"``, ``\"runbook\"``. Consumers\nMUST tolerate kinds they don't recognize.",
+      "properties": {
+        "policyKind": {
+          "minLength": 1,
+          "title": "Policykind",
+          "type": "string"
+        },
+        "policyId": {
+          "minLength": 1,
+          "title": "Policyid",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "policyKind",
+        "policyId"
+      ],
+      "title": "PolicyRef",
+      "type": "object"
+    },
+    "RiskArbitrationPayload": {
+      "additionalProperties": false,
+      "description": "Body of a :class:`RiskArbitration` artifact.\n\nCaptures the human, doctrinal layer the v1 ABI was missing :\nwho has signed off, what scope is covered, what risks are\nexplicitly accepted, until when. Referenced by\n:class:`~warlog_spec.provider_abi.AuditRow.decision_ref` when an\narbitration legitimizes an action.",
+      "properties": {
+        "authority": {
+          "$ref": "#/$defs/ArbitrationAuthority"
+        },
+        "scope": {
+          "items": {
+            "$ref": "#/$defs/ArbitrationScope"
+          },
+          "minItems": 1,
+          "title": "Scope",
+          "type": "array"
+        },
+        "acceptedRisks": {
+          "items": {
+            "$ref": "#/$defs/AcceptedRisk"
+          },
+          "minItems": 1,
+          "title": "Acceptedrisks",
+          "type": "array"
+        },
+        "policyRef": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PolicyRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "validFrom": {
+          "format": "date-time",
+          "title": "Validfrom",
+          "type": "string"
+        },
+        "validUntil": {
+          "format": "date-time",
+          "title": "Validuntil",
+          "type": "string"
+        },
+        "justification": {
+          "minLength": 1,
+          "title": "Justification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "scope",
+        "acceptedRisks",
+        "validFrom",
+        "validUntil",
+        "justification"
+      ],
+      "title": "RiskArbitrationPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Signed human arbitration that legitimizes a class of actions.\n\nWhere :class:`~warlog_spec.provider_abi.ApprovalDescriptor` is a\nrequest-time gate (\"does this specific apply need a senior to\nclick\"), :class:`RiskArbitration` is the durable, signed doctrinal\ndecision that pre-authorizes a class of actions on a scope until\nexpiration. It is the \"Bob's tribal knowledge\" of the SOC made\ninto a contract artifact : auditable, versioned, expirable.\n\nRides inside :class:`ArtifactEnvelope`. Produced by a human\n(``envelope.producer.kind = \"human\"``) or a policy engine that\nis itself signed by a human authority.",
+  "properties": {
+    "envelope": {
+      "$ref": "#/$defs/ArtifactEnvelope"
+    },
+    "payload": {
+      "$ref": "#/$defs/RiskArbitrationPayload"
+    }
+  },
+  "required": [
+    "envelope",
+    "payload"
+  ],
+  "title": "RiskArbitration",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/artifacts/RiskArbitration.json"
+}

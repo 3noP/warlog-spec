@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/action-params/key.schedule_deletion.json",
+  "title": "Params for key.schedule_deletion",
+  "description": "Canonical parameters when scheduling a KMS key for permanent deletion. cooldown_days is REQUIRED because every cloud KMS treats this differently and an analyst MUST consciously choose the recovery window: AWS KMS allows 7-30 days, Azure Key Vault soft-delete is 7-90, GCP KMS allows 24h-30d at version-destruction time. Connectors translate this to the vendor-specific call.",
+  "type": "object",
+  "required": ["cooldown_days"],
+  "properties": {
+    "cooldown_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Days before the key is permanently destroyed. The connector clamps to the vendor's allowed range and surfaces the effective value in vendor_message."
+    }
+  },
+  "additionalProperties": true
+}

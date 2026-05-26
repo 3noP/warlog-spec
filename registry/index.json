@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "0.1.0-preview",
+  "generatedAt": "2026-05-25T00:00:00Z",
+  "packages": [
+    {
+      "name": "warlog-spec",
+      "ecosystem": "pypi",
+      "version": "0.1.0",
+      "type": "reference-implementation",
+      "language": "python",
+      "conformance": ["level-1", "level-2", "level-4"],
+      "compat": { "warlogSpecMin": "0.1.0", "warlogSpecMax": "0.x" },
+      "validationStatus": "contract-and-mock-provider-tested",
+      "lastVerified": "2026-05-25"
+    },
+    {
+      "name": "@warlog/spec",
+      "ecosystem": "npm",
+      "version": "0.1.0",
+      "type": "reference-implementation",
+      "language": "typescript",
+      "conformance": ["level-1", "level-2", "level-4"],
+      "compat": { "warlogSpecMin": "0.1.0", "warlogSpecMax": "0.x" },
+      "validationStatus": "contract-and-mock-provider-tested",
+      "lastVerified": "2026-05-25"
+    },
+    {
+      "name": "@warlog/mcp-proxy",
+      "ecosystem": "npm",
+      "version": "0.1.0",
+      "type": "audit-middleware",
+      "language": "typescript",
+      "conformance": ["audit-chain-consumer"],
+      "compat": { "warlogSpecMin": "0.1.0", "warlogSpecMax": "0.x" },
+      "validationStatus": "contract-tested",
+      "lastVerified": "2026-05-25"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "python.echo",
+      "name": "EchoConnector",
+      "path": "packages/warlog-spec-py/examples/echo_connector.py",
+      "language": "python",
+      "vendor": "Warlog Demo",
+      "families": ["workflow"],
+      "actions": ["alert.acknowledge"],
+      "level": "level-4-reference-template",
+      "validationStatus": "contract-tested"
+    },
+    {
+      "id": "typescript.echo",
+      "name": "EchoConnector",
+      "path": "packages/warlog-spec-ts/examples/echo-connector.ts",
+      "language": "typescript",
+      "vendor": "Warlog Demo",
+      "families": ["device"],
+      "actions": ["host.isolate", "host.unisolate"],
+      "level": "level-4-reference-template",
+      "validationStatus": "contract-tested"
+    },
+    {
+      "id": "python.okta-user-response",
+      "name": "OktaUserResponseConnector",
+      "path": "packages/warlog-spec-py/examples/okta_user_response_connector.py",
+      "language": "python",
+      "vendor": "Okta",
+      "families": ["identity", "iam"],
+      "actions": [
+        "user.disable",
+        "user.force_logout",
+        "user.reset_mfa",
+        "user.revoke_tokens",
+        "user.reset_password",
+        "user.expire_password",
+        "user.unlock",
+        "user.group_remove",
+        "user.delete"
+      ],
+      "level": "level-4-reference-example",
+      "validationStatus": "contract-tested"
+    },
+    {
+      "id": "typescript.okta-user-response",
+      "name": "OktaUserResponseConnector",
+      "path": "packages/warlog-spec-ts/examples/okta-user-response-connector.ts",
+      "language": "typescript",
+      "vendor": "Okta",
+      "families": ["identity", "iam"],
+      "actions": [
+        "user.disable",
+        "user.force_logout",
+        "user.reset_mfa",
+        "user.revoke_tokens",
+        "user.reset_password"
+      ],
+      "level": "level-4-reference-example",
+      "validationStatus": "contract-tested"
+    }
+  ]
+}

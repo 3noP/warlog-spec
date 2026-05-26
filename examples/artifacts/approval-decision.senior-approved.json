@@ -1,0 +1,40 @@
+{
+  "_comment": "Signed ApprovalDecision that a senior analyst approved a user.revoke_tokens request on alice@warlog.demo. Referenced by AuditRow.decisionRef when the action lands in the apply phase. Round-trip-validates against schemas/artifacts/approval-decision.json.",
+  "envelope": {
+    "artifactType": "approval_decision",
+    "artifactVersion": "v1",
+    "subjectType": "case",
+    "subjectId": "CASE-2026-0042",
+    "producer": {
+      "kind": "human",
+      "name": "Warlog approval console",
+      "model": null
+    },
+    "generatedAt": "2026-05-06T10:20:55.314Z",
+    "confidence": {
+      "score": null,
+      "band": "high"
+    },
+    "reviewState": "accepted",
+    "citations": []
+  },
+  "payload": {
+    "requestRef": {
+      "actionId": "user.revoke_tokens",
+      "subjectKind": "identity",
+      "subjectValue": "alice@warlog.demo",
+      "idempotencyKey": "case:CASE-2026-0042:user.revoke_tokens:alice@warlog.demo"
+    },
+    "decisionMakerKind": "human",
+    "decisionMakerId": "user-senior-bclaudel",
+    "decision": "approved",
+    "decidedAt": "2026-05-06T10:20:54.812Z",
+    "basisRef": {
+      "policyKind": "playbook",
+      "policyId": "playbook:token-revocation-on-confirmed-takeover",
+      "version": "2026.03"
+    },
+    "rationale": "Confirmed account takeover from impossible-travel pattern + MFA fatigue signals. Standard tier-2 containment per playbook. User notified out-of-band.",
+    "expirationOverride": "2026-05-06T11:00:00Z"
+  }
+}

@@ -1,0 +1,64 @@
+name: Connector or implementation submission
+description: Ask to list an implementation in COMPAT.md or the registry preview.
+title: "Implementation: "
+labels: ["implementation", "compatibility", "needs-triage"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Implementation Name
+      placeholder: acme-warlog-provider
+    validations:
+      required: true
+  - type: input
+    id: repo
+    attributes:
+      label: Repository Or Package URL
+      placeholder: https://github.com/acme/acme-warlog-provider
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Implementation Kind
+      options:
+        - schema consumer
+        - fixture producer
+        - provider ABI connector
+        - MCP proxy integration
+        - registry pack
+        - other
+    validations:
+      required: true
+  - type: checkboxes
+    id: levels
+    attributes:
+      label: Claimed Conformance Levels
+      options:
+        - label: Level 1 Read
+        - label: Level 2 Write
+        - label: Level 3 Full
+        - label: Level 4 Provider
+        - label: Level 5 Live validated
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Paste commands and exact results. Level 5 requires tenant or lab validation evidence.
+      placeholder: python tests/conformance/runner.py --level 2 --fixtures-dir ./fixtures
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Declared Scope
+      description: Artifact types, action IDs, vendors, and runtime surfaces covered.
+    validations:
+      required: true
+  - type: checkboxes
+    id: truthfulness
+    attributes:
+      label: Truthfulness
+      options:
+        - label: I have not claimed live validation unless I can provide real tenant or lab evidence.
+          required: true

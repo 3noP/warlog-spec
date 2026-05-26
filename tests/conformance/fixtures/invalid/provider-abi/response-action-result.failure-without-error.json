@@ -1,0 +1,14 @@
+{
+  "_comment": "Invalid: outcome=failure MUST include a ConnectorError.",
+  "specVersion": "1.0",
+  "executionId": "exec-negative-failure-without-error",
+  "actionId": "host.isolate",
+  "outcome": "failure",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "agent-negative-002"
+  },
+  "details": {},
+  "error": null
+}

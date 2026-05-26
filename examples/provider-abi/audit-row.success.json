@@ -1,0 +1,39 @@
+{
+  "_comment": "AuditRow logging a successful host.isolate apply by a human analyst. Round-trip-validates against schemas/provider-abi/audit-row.json.",
+  "specVersion": "1.0",
+  "auditId": "audit-7f3c9d12-4b8e-4a1c-9f7e-23d4a8b6c5e1",
+  "executionId": "exec-2a8b4c91-7d6e-4f5a-8c3b-19e7d2a4b6f0",
+  "tenantId": "tenant-warlog-demo",
+  "actor": {
+    "kind": "human",
+    "id": "user-jdoe@warlog.demo"
+  },
+  "actionId": "host.isolate",
+  "subject": {
+    "kind": "endpoint",
+    "selectorType": "agent_id",
+    "selectorValue": "01HK7Z8M9XQYR4VTBN2WJC5XYZ"
+  },
+  "phase": "apply",
+  "outcome": "success",
+  "startedAt": "2026-05-06T10:18:42.118Z",
+  "completedAt": "2026-05-06T10:18:43.847Z",
+  "durationMs": 1729,
+  "error": null,
+  "connector": {
+    "id": "sentinelone",
+    "version": "0.4.2"
+  },
+  "idempotencyKey": "case:CASE-2026-0042:host.isolate:01HK7Z8M9XQYR4VTBN2WJC5XYZ",
+  "decisionRef": {
+    "artifactType": "next_step_proposal",
+    "artifactId": "proposal:01HK7Z8M9XQYR4VTBN2WJC5DEF:1746526477",
+    "contentHash": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+  },
+  "triggerSignalRef": {
+    "kind": "alert",
+    "sourceId": "01HK7Z8M9XQYR4VTBN2WJC5DEF",
+    "contentHash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+  },
+  "complianceScope": ["nis2", "dora"]
+}

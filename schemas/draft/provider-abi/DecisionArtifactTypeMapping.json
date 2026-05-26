@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/DecisionArtifactTypeMapping.json",
+  "title": "DecisionArtifactType — schema mapping",
+  "description": "Canonical mapping from DecisionArtifactType enum values to the JSON Schema relpath that defines the corresponding artifact shape. When an AuditRow.decisionRef.artifactType is X, the artifact at decisionRef.artifactId MUST validate against schemas/{mapping[X]}. Consumers should resolve via this mapping rather than inferring from convention.",
+  "spec_version": "1.0",
+  "mapping": {
+    "triage_proposal": "proposals/triage-proposal.json",
+    "next_step_proposal": "proposals/next-step-proposal.json",
+    "playbook_candidate_proposal": "proposals/playbook-candidate-proposal.json",
+    "investigation_summary_proposal": "proposals/investigation-summary-proposal.json",
+    "classification_assessment": "artifacts/classification-assessment.json",
+    "mitre_assessment": "artifacts/mitre-assessment.json",
+    "enrichment_assessment": "artifacts/enrichment-assessment.json",
+    "closure_summary": "artifacts/closure-summary.json",
+    "case_return_summary": "artifacts/case-return-summary.json",
+    "risk_arbitration": "artifacts/risk-arbitration.json",
+    "approval_decision": "artifacts/approval-decision.json"
+  }
+}

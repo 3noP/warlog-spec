@@ -1,0 +1,66 @@
+{
+  "name": "@warlog/mcp-proxy",
+  "version": "0.1.0",
+  "description": "Warlog audit proxy for Model Context Protocol — sits between MCP clients (Claude Desktop, Cursor, Cline) and MCP servers, signs every tools/call with the Warlog trust-layer contract.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "warlog-mcp-proxy": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "examples"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "warlog",
+    "audit",
+    "ai-agents",
+    "compliance",
+    "gdpr",
+    "nis2",
+    "eu-ai-act"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/3noP/warlog-spec.git",
+    "directory": "packages/warlog-mcp-proxy"
+  },
+  "homepage": "https://github.com/3noP/warlog-spec/tree/main/packages/warlog-mcp-proxy",
+  "bugs": {
+    "url": "https://github.com/3noP/warlog-spec/issues"
+  },
+  "dependencies": {
+    "@warlog/spec": "file:../warlog-spec-ts",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

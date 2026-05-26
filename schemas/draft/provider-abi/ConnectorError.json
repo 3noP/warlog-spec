@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "FailureCategory": {
+      "description": "Normalized failure classes \u2014 connectors map vendor errors to one of these.",
+      "enum": [
+        "auth",
+        "not_found",
+        "state_conflict",
+        "transient",
+        "policy"
+      ],
+      "title": "FailureCategory",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Normalized error returned by a connector.\n\nVendor-specific codes are preserved in ``vendor_*`` fields \u2014 the\ncategory is additive, never lossy.",
+  "properties": {
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "category": {
+      "$ref": "#/$defs/FailureCategory"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "retryable": {
+      "title": "Retryable",
+      "type": "boolean"
+    },
+    "vendorCode": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vendorcode"
+    },
+    "vendorMessage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vendormessage"
+    }
+  },
+  "required": [
+    "category",
+    "message",
+    "retryable"
+  ],
+  "title": "ConnectorError",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/ConnectorError.json"
+}

@@ -1,0 +1,235 @@
+{
+  "$defs": {
+    "ArtifactCitation": {
+      "additionalProperties": false,
+      "description": "A pointer to evidence that supports an artifact.\n\nCitations are how downstream review can audit a producer's\nreasoning : \"this MITRE T1078 mapping was supported by event X\nsection Y at score 0.83\". The exact ``source_kind`` vocabulary is\nopen (``alert``, ``log_event``, ``threat_intel_feed``, etc.) ;\nconsumers MUST tolerate kinds they don't recognize.",
+      "properties": {
+        "sourceId": {
+          "description": "Identifier of the supporting source",
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "sourceKind": {
+          "description": "Type of supporting source",
+          "title": "Sourcekind",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional section or path",
+          "title": "Section"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "sourceId",
+        "sourceKind"
+      ],
+      "title": "ArtifactCitation",
+      "type": "object"
+    },
+    "ArtifactConfidence": {
+      "additionalProperties": false,
+      "description": "A numeric confidence score paired with a coarse-grained band.\n\nBoth fields are optional so that producers without a probabilistic\nmodel can still emit confidence (band only) and probabilistic\nproducers can emit both. Consumers read whichever is present.",
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "band": {
+          "$ref": "#/$defs/ConfidenceBand",
+          "default": "unknown"
+        }
+      },
+      "title": "ArtifactConfidence",
+      "type": "object"
+    },
+    "ConfidenceBand": {
+      "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "unknown"
+      ],
+      "title": "ConfidenceBand",
+      "type": "string"
+    },
+    "InvestigationSummaryProposalPayload": {
+      "additionalProperties": false,
+      "description": "Synthesized investigation summary : findings, hypothesis,\nimpact, recommended next steps, unresolved questions.\n\nProduced at L1\u2192L2 handoff (case escalation) or at case closure\n(becomes part of the :class:`~warlog_spec.artifacts.CaseReturnSummary`).",
+      "properties": {
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "hypothesis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hypothesis"
+        },
+        "findings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "impactAssessment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impactassessment"
+        },
+        "nextSteps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Nextsteps",
+          "type": "array"
+        },
+        "unresolvedQuestions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unresolvedquestions",
+          "type": "array"
+        },
+        "confidence": {
+          "$ref": "#/$defs/ArtifactConfidence"
+        }
+      },
+      "required": [
+        "summary"
+      ],
+      "title": "InvestigationSummaryProposalPayload",
+      "type": "object"
+    },
+    "ProposalEnvelope": {
+      "additionalProperties": false,
+      "description": "Provenance + approval metadata around any proposal payload.\n\nDistinct from :class:`~warlog_spec.artifacts.ArtifactEnvelope` :\nwhere artifacts describe what was observed (and are passively\nconsumed), proposals carry an explicit approval contract :\n``requires_approval`` MUST be true unless a tenant policy\nauto-approves the class. ``can_mutate`` declares whether\naccepting the proposal triggers a state change (set ``False``\nfor review-only suggestions).",
+      "properties": {
+        "proposalType": {
+          "title": "Proposaltype",
+          "type": "string"
+        },
+        "proposalVersion": {
+          "default": "v1",
+          "title": "Proposalversion",
+          "type": "string"
+        },
+        "proposalId": {
+          "title": "Proposalid",
+          "type": "string"
+        },
+        "subjectType": {
+          "enum": [
+            "alert",
+            "case"
+          ],
+          "title": "Subjecttype",
+          "type": "string"
+        },
+        "subjectId": {
+          "title": "Subjectid",
+          "type": "string"
+        },
+        "requiresApproval": {
+          "default": true,
+          "title": "Requiresapproval",
+          "type": "boolean"
+        },
+        "canMutate": {
+          "default": false,
+          "title": "Canmutate",
+          "type": "boolean"
+        },
+        "confidence": {
+          "$ref": "#/$defs/ArtifactConfidence"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/ArtifactCitation"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposalType",
+        "proposalId",
+        "subjectType",
+        "subjectId",
+        "rationale"
+      ],
+      "title": "ProposalEnvelope",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Envelope-wrapped synthesized investigation summary.",
+  "properties": {
+    "envelope": {
+      "$ref": "#/$defs/ProposalEnvelope"
+    },
+    "payload": {
+      "$ref": "#/$defs/InvestigationSummaryProposalPayload"
+    }
+  },
+  "required": [
+    "envelope",
+    "payload"
+  ],
+  "title": "InvestigationSummaryProposal",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/proposals/InvestigationSummaryProposal.json"
+}

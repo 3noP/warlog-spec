@@ -1,0 +1,63 @@
+{
+  "_comment": "Signed RiskArbitration that pre-authorizes a class of LSASS-touching actions on a maintenance window for the billing-prod cluster. The substrate the audit chain points at via DecisionRef when these actions execute. Round-trip-validates against schemas/artifacts/risk-arbitration.json.",
+  "envelope": {
+    "artifactType": "risk_arbitration",
+    "artifactVersion": "v1",
+    "subjectType": "case",
+    "subjectId": "CASE-2026-0042",
+    "producer": {
+      "kind": "human",
+      "name": "RSSI signing console",
+      "model": null
+    },
+    "generatedAt": "2026-05-01T09:14:00Z",
+    "confidence": {
+      "score": null,
+      "band": "high"
+    },
+    "reviewState": "accepted",
+    "citations": [
+      {
+        "sourceId": "policy:lsass-maintenance-window-2026Q2",
+        "sourceKind": "policy_document",
+        "section": "S4.2",
+        "score": null
+      }
+    ]
+  },
+  "payload": {
+    "authority": {
+      "role": "ciso",
+      "signerId": "user-rssi-mdupont",
+      "signerName": "Marie Dupont"
+    },
+    "scope": [
+      {
+        "scopeKind": "asset_group",
+        "selectorValue": "billing-prod-cluster"
+      },
+      {
+        "scopeKind": "compliance_perimeter",
+        "selectorValue": "pci_dss_v4_cde"
+      }
+    ],
+    "acceptedRisks": [
+      {
+        "name": "lsass_memory_dump_during_maintenance",
+        "description": "Authorized administration tool dumps LSASS memory between 02:00 and 04:00 UTC for monthly credential-store integrity check. Generates T1003.001 telemetry that would otherwise trigger containment."
+      },
+      {
+        "name": "service_interruption_during_isolation",
+        "description": "Hosts may be isolated for forensic confirmation during the window; the billing service tolerates a sub-15-minute interruption per the maintenance SLA."
+      }
+    ],
+    "policyRef": {
+      "policyKind": "playbook",
+      "policyId": "playbook:lsass-maintenance-window-runbook",
+      "version": "2026.04"
+    },
+    "validFrom": "2026-05-01T02:00:00Z",
+    "validUntil": "2026-08-01T04:00:00Z",
+    "justification": "Monthly credential-store integrity check signed off by CISO and DRO 2026-04-28. Compensating controls: window-scoped network isolation, end-of-window LSASS hash diff captured in s3://warlog-evidence/lsass-windows/, on-call analyst paged on any sustained T1003.001 outside the [02:00,04:00] UTC window."
+  }
+}
