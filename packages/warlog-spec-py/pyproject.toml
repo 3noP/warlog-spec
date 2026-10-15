@@ -1,6 +1,6 @@
 [project]
 name = "warlog-spec"
-version = "0.1.0"
+version = "0.2.0"
 description = "Warlog Spec — canonical workflow contract for Security Operations. Pydantic models, enums, ABI base classes, and HMAC audit-chain crypto primitives."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -44,9 +44,16 @@ warlog-verify = "warlog_spec.verify:_cli"
 verify = [
     "jsonschema>=4.18.0",
 ]
+crypto = [
+    # Ed25519 sign/verify for A2A agent attestations (RFC-0005). Optional so
+    # ``import warlog_spec`` stays light for type-only consumers; only the
+    # attestation sign/verify path needs it.
+    "cryptography>=42.0.0",
+]
 test = [
     "httpx>=0.27.0",
     "jsonschema>=4.18.0",
+    "cryptography>=42.0.0",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
 ]

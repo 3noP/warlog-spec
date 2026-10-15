@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.1.0",
+  "spec_version": "0.2.0",
   "schemas": [
     "action-catalog.json",
     "action-params/host.collect_artifacts.json",
@@ -14,13 +14,16 @@
     "artifacts/closure-summary.json",
     "artifacts/enrichment-assessment.json",
     "artifacts/mitre-assessment.json",
+    "artifacts/playbook-gate-evaluation.json",
     "artifacts/risk-arbitration.json",
     "common/alert-category.json",
     "common/alert-severity.json",
     "common/alert-source.json",
     "common/alert-status.json",
     "common/alert-verdict.json",
+    "common/case-category.json",
     "common/case-priority.json",
+    "common/case-severity.json",
     "common/case-status.json",
     "common/compliance-scope.json",
     "common/entity-role.json",
@@ -34,12 +37,14 @@
     "proposals/next-step-proposal.json",
     "proposals/playbook-candidate-proposal.json",
     "proposals/triage-proposal.json",
+    "provider-abi/a2a-attestation.json",
     "provider-abi/audit-row.json",
     "provider-abi/connector-capability.json",
     "provider-abi/connector-error.json",
     "provider-abi/decision-artifact-type-mapping.json",
     "provider-abi/response-action-result.json",
     "provider-abi/response-action-spec.json",
+    "provider-abi/scan-verdict.json",
     "provider-abi/signed-audit-row.json",
     "registry/pack-manifest.json"
   ]

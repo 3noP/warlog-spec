@@ -51,7 +51,7 @@
     "file.quarantine": {
       "family": "device",
       "reversibility": "reversible",
-      "default_approval": "senior",
+      "default_approval": "analyst",
       "default_reviewers": 1,
       "summary": "Move a file to vendor quarantine (releasable)."
     },
@@ -65,7 +65,7 @@
     "hash.block": {
       "family": "device",
       "reversibility": "reversible",
-      "default_approval": "senior",
+      "default_approval": "analyst",
       "default_reviewers": 1,
       "summary": "Add a SHA256 to fleet-wide prevention."
     },
@@ -121,7 +121,7 @@
     "user.group_remove": {
       "family": "identity",
       "reversibility": "reversible",
-      "default_approval": "senior",
+      "default_approval": "analyst",
       "default_reviewers": 1,
       "summary": "Remove user from a (typically privileged) group.",
       "params_schema_ref": "action-params/user.group_remove.json"
@@ -157,7 +157,7 @@
     "email.block_sender": {
       "family": "email",
       "reversibility": "reversible",
-      "default_approval": "senior",
+      "default_approval": "analyst",
       "default_reviewers": 1,
       "summary": "Add a sender (email or domain) to the tenant blocklist."
     },
@@ -252,6 +252,20 @@
       "default_approval": "manager",
       "default_reviewers": 2,
       "summary": "Permanently terminate a compute instance."
+    },
+    "host.wipe": {
+      "family": "device",
+      "reversibility": "destructive",
+      "default_approval": "manager",
+      "default_reviewers": 2,
+      "summary": "Factory-erase a managed device (MDM). Destroys the evidence AND the workstation; re-provisioning is the only path back."
+    },
+    "file.detonate": {
+      "family": "device",
+      "reversibility": "varies",
+      "default_approval": "analyst",
+      "default_reviewers": 1,
+      "summary": "Submit a sample for sandbox detonation. Estate unchanged; the sample's disclosure is unrecallable."
     },
     "iam.role_detach": {
       "family": "iam",
@@ -356,6 +370,27 @@
       "default_approval": "analyst",
       "default_reviewers": 1,
       "summary": "Trigger a playbook (reversibility depends on body)."
+    },
+    "host.run_script": {
+      "family": "device",
+      "reversibility": "varies",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Run a named remediation or rollback script on a host (its body decides)."
+    },
+    "host.scan": {
+      "family": "device",
+      "reversibility": "reversible",
+      "default_approval": "none",
+      "default_reviewers": 0,
+      "summary": "Start an on-demand malware scan of a host (changes nothing it finds)."
+    },
+    "user.revoke_oauth_grant": {
+      "family": "identity",
+      "reversibility": "destructive",
+      "default_approval": "senior",
+      "default_reviewers": 1,
+      "summary": "Revoke an application's OAuth grant for a user (the user must consent again)."
     }
   }
 }

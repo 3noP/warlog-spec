@@ -112,6 +112,9 @@ class TriageProposalPayload(SpecModel):
     should_create_case: bool = False
     priority_hint: CasePriority = CasePriority.UNKNOWN
     summary: str
+    # What the proposal is still uncertain about. A grounded proposal states
+    # not only what it believes but what it could not resolve.
+    uncertainties: list[str] = Field(default_factory=list)
 
 
 class TriageProposal(SpecModel):
@@ -185,9 +188,20 @@ class PlaybookCandidateProposal(SpecModel):
 # =============================================================================
 
 
+class RuledOutHypothesis(SpecModel):
+    """A hypothesis the analysis considered and eliminated, with the reasoning
+    that ruled it out. Preserving ruled-out alternatives (not just the active
+    hypothesis) is what stops the next stage from re-running disconfirming work
+    already done."""
+
+    hypothesis: str
+    rationale: str
+
+
 class InvestigationSummaryProposalPayload(SpecModel):
     """Synthesized investigation summary : findings, hypothesis,
-    impact, recommended next steps, unresolved questions.
+    impact, recommended next steps, unresolved questions, ruled-out
+    alternatives.
 
     Produced at L1→L2 handoff (case escalation) or at case closure
     (becomes part of the :class:`~warlog_spec.artifacts.CaseReturnSummary`).
@@ -199,6 +213,8 @@ class InvestigationSummaryProposalPayload(SpecModel):
     impact_assessment: str | None = None
     next_steps: list[str] = Field(default_factory=list)
     unresolved_questions: list[str] = Field(default_factory=list)
+    # Hypotheses considered and discarded, with rationale (Bundle Chain §4/§6.2).
+    ruled_out_hypotheses: list[RuledOutHypothesis] = Field(default_factory=list)
     confidence: ArtifactConfidence = Field(default_factory=ArtifactConfidence)
 
 
@@ -220,6 +236,7 @@ __all__ = [
     "PlaybookCandidateProposalPayload",
     "ProposalEnvelope",
     "ProposalStepKind",
+    "RuledOutHypothesis",
     "TriageProposal",
     "TriageProposalPayload",
 ]

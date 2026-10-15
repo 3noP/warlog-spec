@@ -1,7 +1,7 @@
 /**
  * @warlog/spec conformance tests.
  *
- * 1. Coverage : `PRODUCERS` MUST contain exactly the 18 productible
+ * 1. Coverage : `PRODUCERS` MUST contain exactly the 21 productible
  *    types the spec defines. (Bundle shapes — TriageBundle,
  *    InvestigationBundle, ResponseBundle, IncidentBundle — are
  *    deliberately out of scope of the open spec ; they live in the
@@ -46,16 +46,19 @@ const EXPECTED_PRODUCTIBLE = new Set([
   "artifacts/closure-summary.json",
   "artifacts/enrichment-assessment.json",
   "artifacts/mitre-assessment.json",
+  "artifacts/playbook-gate-evaluation.json",
   "artifacts/risk-arbitration.json",
   "proposals/investigation-summary-proposal.json",
   "proposals/next-step-proposal.json",
   "proposals/playbook-candidate-proposal.json",
   "proposals/triage-proposal.json",
+  "provider-abi/a2a-attestation.json",
   "provider-abi/audit-row.json",
   "provider-abi/connector-capability.json",
   "provider-abi/connector-error.json",
   "provider-abi/response-action-result.json",
   "provider-abi/response-action-spec.json",
+  "provider-abi/scan-verdict.json",
   "provider-abi/signed-audit-row.json",
   "registry/pack-manifest.json",
 ]);
@@ -66,7 +69,7 @@ function loadSchema(relpath: string): Record<string, unknown> {
 }
 
 describe("Conformance Level 2 — producer coverage", () => {
-  it("PRODUCERS covers exactly the 18 productible types", () => {
+  it("PRODUCERS covers exactly the 21 productible types", () => {
     const actual = new Set(Object.keys(PRODUCERS));
     const missing = [...EXPECTED_PRODUCTIBLE].filter((s) => !actual.has(s));
     const extras = [...actual].filter((s) => !EXPECTED_PRODUCTIBLE.has(s));

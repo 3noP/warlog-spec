@@ -264,6 +264,30 @@
       "title": "ArtifactReviewState",
       "type": "string"
     },
+    "ClaimRef": {
+      "additionalProperties": false,
+      "description": "One claim of the evidence a signer read, pinned by its content.\n\n``content_hash`` is sha256 over the claim as it was served to the\nsigner (canonical bytes, the hash field itself left out). A claim\nthat changed after the signature \u2014 re-derived, ratified, disputed \u2014\nno longer hashes the same, so the arbitration says exactly which\nreading of the evidence it rests on.",
+      "properties": {
+        "claimId": {
+          "minLength": 1,
+          "title": "Claimid",
+          "type": "string"
+        },
+        "contentHash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Contenthash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claimId",
+        "contentHash"
+      ],
+      "title": "ClaimRef",
+      "type": "object"
+    },
     "ConfidenceBand": {
       "description": "Coarse-grained confidence band used when a numeric score is not the\nright surface (e.g. for human-readable summaries or UI badges).",
       "enum": [
@@ -274,6 +298,54 @@
       ],
       "title": "ConfidenceBand",
       "type": "string"
+    },
+    "HumanSignature": {
+      "additionalProperties": false,
+      "description": "A person's own Ed25519 signature over the statement they signed.\n\n``statement`` is the exact UTF-8 text that was signed (canonical\nJSON: sorted keys, no insignificant whitespace, no float), so a\nverifier holding ``public_key`` checks ``signature_value`` over\nthose bytes without re-deriving anything, then reads what the\nstatement says and compares it with the payload around it.\n\n``key_id`` is the lowercase hex sha256 of the raw public key; both\nbinary values are unpadded base64url. The private half never leaves\nthe signer's device, so a platform holding this record cannot have\nproduced the signature.",
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "default": "Ed25519",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "keyId": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Keyid",
+          "type": "string"
+        },
+        "publicKey": {
+          "minLength": 1,
+          "title": "Publickey",
+          "type": "string"
+        },
+        "signedAt": {
+          "format": "date-time",
+          "title": "Signedat",
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 2,
+          "title": "Statement",
+          "type": "string"
+        },
+        "signatureValue": {
+          "minLength": 1,
+          "title": "Signaturevalue",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyId",
+        "publicKey",
+        "signedAt",
+        "statement",
+        "signatureValue"
+      ],
+      "title": "HumanSignature",
+      "type": "object"
     },
     "PolicyRef": {
       "additionalProperties": false,
@@ -309,9 +381,43 @@
       "title": "PolicyRef",
       "type": "object"
     },
+    "ResponseActionRequestRef": {
+      "additionalProperties": false,
+      "description": "Pointer back at the request an :class:`ApprovalDecision` resolves.\n\nMirrors the :class:`~warlog_spec.provider_abi.ResponseActionSpec`\ntriple (action_id, subject, idempotency_key) so a runtime can\ncorrelate the approval back to the originating request without\nholding the full spec.",
+      "properties": {
+        "actionId": {
+          "minLength": 1,
+          "title": "Actionid",
+          "type": "string"
+        },
+        "subjectKind": {
+          "minLength": 1,
+          "title": "Subjectkind",
+          "type": "string"
+        },
+        "subjectValue": {
+          "minLength": 1,
+          "title": "Subjectvalue",
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "minLength": 1,
+          "title": "Idempotencykey",
+          "type": "string"
+        }
+      },
+      "required": [
+        "actionId",
+        "subjectKind",
+        "subjectValue",
+        "idempotencyKey"
+      ],
+      "title": "ResponseActionRequestRef",
+      "type": "object"
+    },
     "RiskArbitrationPayload": {
       "additionalProperties": false,
-      "description": "Body of a :class:`RiskArbitration` artifact.\n\nCaptures the human, doctrinal layer the v1 ABI was missing :\nwho has signed off, what scope is covered, what risks are\nexplicitly accepted, until when. Referenced by\n:class:`~warlog_spec.provider_abi.AuditRow.decision_ref` when an\narbitration legitimizes an action.",
+      "description": "Body of a :class:`RiskArbitration` artifact.\n\nCaptures the human, doctrinal layer the v1 ABI was missing :\nwho has signed off, what scope is covered, what risks are\nexplicitly accepted, until when. Referenced by\n:class:`~warlog_spec.provider_abi.AuditRow.decision_ref` when an\narbitration legitimizes an action.\n\nA standing arbitration (a d\u00e9rogation) leaves the four last fields\nempty. A per-request arbitration \u2014 one person deciding one\nproposal \u2014 fills them : the decision, the request it answers, the\nclaims of the evidence the signer read, and the signer's own\nsignature over all of it.",
       "properties": {
         "authority": {
           "$ref": "#/$defs/ArbitrationAuthority"
@@ -357,6 +463,51 @@
           "minLength": 1,
           "title": "Justification",
           "type": "string"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "enum": [
+                "approved",
+                "denied"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decision"
+        },
+        "requestRef": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResponseActionRequestRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/ClaimRef"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "signature": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanSignature"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [

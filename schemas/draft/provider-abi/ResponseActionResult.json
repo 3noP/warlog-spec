@@ -73,7 +73,8 @@
         "not_found",
         "state_conflict",
         "transient",
-        "policy"
+        "policy",
+        "unknown"
       ],
       "title": "FailureCategory",
       "type": "string"
@@ -101,6 +102,8 @@
         "host.stop",
         "host.start",
         "host.delete",
+        "host.wipe",
+        "file.detonate",
         "iam.role_detach",
         "iam.role_attach",
         "iam.credentials_disable",
@@ -129,7 +132,10 @@
         "cert.revoke",
         "alert.acknowledge",
         "case.update_status",
-        "playbook.trigger"
+        "playbook.trigger",
+        "host.run_script",
+        "host.scan",
+        "user.revoke_oauth_grant"
       ],
       "title": "ResponseActionId",
       "type": "string"

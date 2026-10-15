@@ -21,7 +21,7 @@
 
 ## Generated Artifacts
 
-- schemas regenerated through `backend/scripts/generate_spec_schemas.py` when model contracts changed
+- schemas regenerated through the schema generator when model contracts changed
 - TypeScript `dist` rebuilt when package source changed
 - generated files left untouched when not relevant
 

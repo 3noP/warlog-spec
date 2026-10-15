@@ -79,12 +79,13 @@ const EntityTypeEnum = z.enum([
   EntityType.IP,
   EntityType.DOMAIN,
   EntityType.URL,
-  EntityType.HASH,
   EntityType.FILE,
   EntityType.PROCESS,
   EntityType.EMAIL,
-  EntityType.ASSET_GROUP,
-  EntityType.ORGANIZATION,
+  EntityType.REGISTRY,
+  EntityType.VULNERABILITY,
+  EntityType.CERTIFICATE,
+  EntityType.CLOUD_RESOURCE,
   EntityType.OTHER,
 ]);
 
@@ -324,6 +325,44 @@ export const AcceptedRisk = z.object({
 });
 export type AcceptedRisk = z.infer<typeof AcceptedRisk>;
 
+export const ResponseActionRequestRef = z.object({
+  actionId: z.string().min(1),
+  subjectKind: z.string().min(1),
+  subjectValue: z.string().min(1),
+  idempotencyKey: z.string().min(1),
+});
+export type ResponseActionRequestRef = z.infer<typeof ResponseActionRequestRef>;
+
+/**
+ * One claim of the evidence a signer read, pinned by its content: sha256 over
+ * the claim as it was served (canonical bytes, the hash field left out). A claim
+ * that changed after the signature no longer hashes the same.
+ */
+export const ClaimRef = z.object({
+  claimId: z.string().min(1),
+  contentHash: z.string().regex(/^[0-9a-f]{64}$/),
+});
+export type ClaimRef = z.infer<typeof ClaimRef>;
+
+/**
+ * A person's own Ed25519 signature over the statement they signed. `statement`
+ * is the exact UTF-8 text signed (canonical JSON, no float); `keyId` is the hex
+ * sha256 of the raw public key; binary values are unpadded base64url.
+ */
+export const HumanSignature = z.object({
+  algorithm: z.literal("Ed25519").default("Ed25519"),
+  keyId: z.string().regex(/^[0-9a-f]{64}$/),
+  publicKey: z.string().min(1),
+  signedAt: z.string().datetime({ offset: true }),
+  statement: z.string().min(2),
+  signatureValue: z.string().min(1),
+});
+export type HumanSignature = z.infer<typeof HumanSignature>;
+
+/**
+ * A standing arbitration (a derogation) leaves the four last fields empty; a
+ * per-request arbitration (one person deciding one proposal) fills them.
+ */
 export const RiskArbitrationPayload = z.object({
   authority: ArbitrationAuthority,
   scope: z.array(ArbitrationScope).min(1),
@@ -332,6 +371,10 @@ export const RiskArbitrationPayload = z.object({
   validFrom: z.string().datetime({ offset: true }),
   validUntil: z.string().datetime({ offset: true }),
   justification: z.string().min(1),
+  decision: z.enum(["approved", "denied"]).nullable().default(null),
+  requestRef: ResponseActionRequestRef.nullable().default(null),
+  claims: z.array(ClaimRef).default([]),
+  signature: HumanSignature.nullable().default(null),
 });
 export type RiskArbitrationPayload = z.infer<typeof RiskArbitrationPayload>;
 
@@ -340,14 +383,6 @@ export const RiskArbitration = z.object({
   payload: RiskArbitrationPayload,
 });
 export type RiskArbitration = z.infer<typeof RiskArbitration>;
-
-export const ResponseActionRequestRef = z.object({
-  actionId: z.string().min(1),
-  subjectKind: z.string().min(1),
-  subjectValue: z.string().min(1),
-  idempotencyKey: z.string().min(1),
-});
-export type ResponseActionRequestRef = z.infer<typeof ResponseActionRequestRef>;
 
 export const ApprovalDecisionPayload = z.object({
   requestRef: ResponseActionRequestRef,
@@ -366,3 +401,48 @@ export const ApprovalDecision = z.object({
   payload: ApprovalDecisionPayload,
 });
 export type ApprovalDecision = z.infer<typeof ApprovalDecision>;
+
+/**
+ * One trigger condition, paired with what was actually observed.
+ *
+ * `expected` is configuration and can be re-read from the playbook at any time;
+ * `observed` is evidence and cannot. It is the value the condition read off THIS
+ * signal at trigger time, which is the part nobody can reconstruct once the
+ * signal has moved on. `observed` is nullable because a condition can be
+ * evaluated against a field the signal does not carry — null is then the honest
+ * record of "the field was absent", not a missing value.
+ */
+export const MatchedTriggerCondition = z.object({
+  field: z.string().min(1),
+  operator: z.string().min(1),
+  expected: z.string(),
+  observed: z.string().nullable().default(null),
+});
+export type MatchedTriggerCondition = z.infer<typeof MatchedTriggerCondition>;
+
+export const PlaybookGateEvaluationPayload = z.object({
+  playbookId: z.string().min(1),
+  playbookVersion: z.number().int().min(1),
+  matchedConditions: z.array(MatchedTriggerCondition).min(1),
+  evaluatedAt: z.string().datetime({ offset: true }),
+  conditionsSourceHash: z.string().regex(/^[0-9a-f]{64}$/),
+});
+export type PlaybookGateEvaluationPayload = z.infer<
+  typeof PlaybookGateEvaluationPayload
+>;
+
+/**
+ * The decision artifact for an action nobody decided.
+ *
+ * A human click produces an ApprovalDecision and a model proposal produces a
+ * *Proposal; a published playbook whose trigger conditions matched produces
+ * neither, yet `AuditRow.decisionRef` is REQUIRED — deliberately, because an
+ * action with no traceable decision must not be writable. This artifact is what
+ * that pointer aims at, so the requirement is satisfied by a real object instead
+ * of being relaxed.
+ */
+export const PlaybookGateEvaluation = z.object({
+  envelope: ArtifactEnvelope,
+  payload: PlaybookGateEvaluationPayload,
+});
+export type PlaybookGateEvaluation = z.infer<typeof PlaybookGateEvaluation>;

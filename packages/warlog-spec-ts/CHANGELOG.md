@@ -10,6 +10,60 @@
 > packages publish at the same version on the same day ; the cross-
 > language byte-equivalence guarantee is preserved.
 
+## [Unreleased]
+
+## [0.2.0] — 2026-10-15
+
+### Added
+- `a2a.ts`: `A2AAttestation`, `A2AAttestationPayload`, `A2ASignature`,
+  `canonicalizeA2aV1`, `computeRequestBinding`, `stripMeta`,
+  `signA2aAttestation`, `verifyA2aAttestation`, `generateEd25519KeypairPem`,
+  `A2A_META_KEY`, `A2A_EXTENSION_URI`: a per-call agent identity claim
+  carried in JSON-RPC `_meta` or A2A `Message.metadata`, byte-equivalent to
+  `warlog_spec.a2a`.
+- `scan-verdict.ts`: `ScanVerdict`, `ScanVerdictPayload`,
+  `ScanVerdictSignature`, `SCAN_SURFACES`, `computeContentBinding`,
+  `canonicalizeScanVerdictV1`, `signScanVerdict`, `verifyScanVerdict`: a
+  signed, portable record of what a content scanner saw, bound to the
+  scanned bytes by a domain-separated sha256. Scores are integer thousandths
+  so canonical bytes agree with Python. `mcp_tool_manifest` is among the
+  surfaces; its `content` for `computeContentBinding` is the canonical
+  tool-list bytes, and both suites pin the same binding golden.
+- `PlaybookGateEvaluation`, `PlaybookGateEvaluationPayload`,
+  `MatchedTriggerCondition`, and `playbook_gate_evaluation` in
+  `DecisionArtifactType`: the decision artifact for an action fired by a
+  playbook's trigger conditions, with `conditionsSourceHash` pinning the
+  evaluated configuration.
+- `SystemActor` (`kind: "system"`) as a third `AuditActor` variant;
+  `investigation_finding` in `TriggerSignalKind`; `unknown` in
+  `FailureCategory`.
+- `host.run_script`, `host.scan`, `user.revoke_oauth_grant`, `host.wipe` and
+  `file.detonate` in `ResponseActionId` (catalog 49 → 54, additive within
+  ABI 1.0, byte-equivalence preserved).
+- `NamingDescriptor`, `AccountForm`, `HostForm`; `ConnectorCapability.naming`:
+  the forms in which a connector's tool names an account and a host,
+  preferred first. Both lists default to empty, which states nothing.
+- `EntityType` gains `cloud_resource`.
+- `ClaimRef`, `HumanSignature`, and `RiskArbitrationPayload.decision`,
+  `.requestRef`, `.claims`, `.signature` (defaulted to `null` / `[]`): a
+  per-request arbitration signed by the person's own Ed25519 key, with the
+  content hash of each claim read.
+- `TriageProposalPayload.uncertainties` (`string[]`, default `[]`);
+  `RuledOutHypothesis` (`hypothesis` + `rationale`) and
+  `InvestigationSummaryProposalPayload.ruledOutHypotheses` (default `[]`).
+- Level 2 conformance: `produceAll` covers 21 types
+  (`produceA2AAttestation`, `produceScanVerdict` and
+  `producePlaybookGateEvaluation` added).
+
+### Changed (breaking)
+- `EntityType` matches `warlog-spec-py` value for value. It had drifted:
+  `HASH`, `ASSET_GROUP` and `ORGANIZATION` are gone, `REGISTRY`,
+  `VULNERABILITY` and `CERTIFICATE` are added. An entity built with the
+  dropped values failed validation in the Python package and the platform;
+  one the platform sent with the missing ones failed here. A hash is a
+  `file` entity; a group or an organisation is a scope, not an entity.
+  The taxonomy is pinned in both suites.
+
 ## [0.1.0] — 2026-05-20 — first public npm release
 
 First artifact published to npm. Released in lockstep with

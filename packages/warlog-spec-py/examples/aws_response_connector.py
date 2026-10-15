@@ -3,8 +3,7 @@
 Wraps boto3 against AWS IAM, KMS, S3, EC2 to implement the canonical
 SOC cloud-IR sub-graph against an AWS account.
 
-Actions covered (cloud audit, see ``docs/canon-migration/15-cloud-gap-audit.md``
-and the doctrine refinement in ``docs/canon-migration/16-doctrine-refinement.md``):
+Actions covered (the cloud families of the catalog):
 
 - :data:`ResponseActionId.HOST_STOP`               → EC2 StopInstances
 - :data:`ResponseActionId.HOST_START`              → EC2 StartInstances (inverse)
@@ -65,7 +64,7 @@ What this file proves :
 - The same ABI shape that drove the Okta / Falcon / PAN-OS examples
   fits a vendor with FOUR distinct service surfaces (IAM, KMS, S3,
   EC2) by routing per action_id rather than per service.
-- The DESTRUCTIVE / DISRUPTIVE classification carved out in audit 14
+- The DESTRUCTIVE / DISRUPTIVE classification
   shows up operationally : ``key.schedule_deletion`` is gated through
   MANAGER + 2 reviewers because the canonical action catalog says so,
   not because the connector imposes its own policy.

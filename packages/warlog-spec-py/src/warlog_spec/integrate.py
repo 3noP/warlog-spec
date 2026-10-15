@@ -275,7 +275,7 @@ _FAMILY_TO_SCOPE: dict[str, ResponseActionScope] = {
 
 # Action families whose subject is PII-bearing — the decorator MUST
 # pseudonymize the selector before signing. Mirrors the runtime gate
-# in ``backend/app/services/connectors/abi_runner.py``.
+# in the Warlog runtime that executes response actions.
 _PII_FAMILIES: frozenset[str] = frozenset({"identity", "email", "iam"})
 
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/EntityType.json",
   "title": "EntityType",
-  "description": "Normalized entity type \u2014 12-value canonical taxonomy.",
+  "description": "Normalized entity type \u2014 13-value canonical taxonomy.",
   "type": "string",
   "enum": [
     "host",
@@ -16,6 +16,7 @@
     "registry",
     "vulnerability",
     "certificate",
+    "cloud_resource",
     "other"
   ]
 }

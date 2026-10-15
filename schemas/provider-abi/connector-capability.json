@@ -1,5 +1,17 @@
 {
   "$defs": {
+    "AccountForm": {
+      "description": "A form in which a tool names an account (RFC-0007).",
+      "enum": [
+        "upn",
+        "email",
+        "sam",
+        "domain_sam",
+        "object_id"
+      ],
+      "title": "AccountForm",
+      "type": "string"
+    },
     "AuthDescriptor": {
       "additionalProperties": false,
       "description": "How a connector authenticates against its upstream vendor API.",
@@ -175,6 +187,16 @@
       "title": "FreshnessHint",
       "type": "string"
     },
+    "HostForm": {
+      "description": "A form in which a tool names a host (RFC-0007).",
+      "enum": [
+        "device_id",
+        "short",
+        "fqdn"
+      ],
+      "title": "HostForm",
+      "type": "string"
+    },
     "IngressDelivery": {
       "description": "How a connector delivers events to the runtime.",
       "enum": [
@@ -240,6 +262,28 @@
       "title": "LifecycleDescriptor",
       "type": "object"
     },
+    "NamingDescriptor": {
+      "additionalProperties": false,
+      "description": "How the connector's upstream tool names the entities it acts on\n(RFC-0007): the forms it accepts, preferred first. An empty list states\nnothing, and a runtime passes the subject as it would without it; a\nnon-empty one obliges the runtime to render the subject in a listed form,\nor to refuse the action.",
+      "properties": {
+        "account": {
+          "items": {
+            "$ref": "#/$defs/AccountForm"
+          },
+          "title": "Account",
+          "type": "array"
+        },
+        "host": {
+          "items": {
+            "$ref": "#/$defs/HostForm"
+          },
+          "title": "Host",
+          "type": "array"
+        }
+      },
+      "title": "NamingDescriptor",
+      "type": "object"
+    },
     "ResponseActionId": {
       "description": "Catalog of canonical, vendor-neutral atomic response actions.\n\nConnectors declare which of these they implement via\n``ConnectorCapability.egress.supports_response_actions``. New\nactions require an RFC and a MINOR spec bump.",
       "enum": [
@@ -263,6 +307,8 @@
         "host.stop",
         "host.start",
         "host.delete",
+        "host.wipe",
+        "file.detonate",
         "iam.role_detach",
         "iam.role_attach",
         "iam.credentials_disable",
@@ -291,7 +337,10 @@
         "cert.revoke",
         "alert.acknowledge",
         "case.update_status",
-        "playbook.trigger"
+        "playbook.trigger",
+        "host.run_script",
+        "host.scan",
+        "user.revoke_oauth_grant"
       ],
       "title": "ResponseActionId",
       "type": "string"
@@ -340,6 +389,9 @@
     },
     "lifecycle": {
       "$ref": "#/$defs/LifecycleDescriptor"
+    },
+    "naming": {
+      "$ref": "#/$defs/NamingDescriptor"
     },
     "compat": {
       "$ref": "#/$defs/ConnectorCompat"

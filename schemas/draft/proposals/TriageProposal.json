@@ -256,6 +256,13 @@
         "summary": {
           "title": "Summary",
           "type": "string"
+        },
+        "uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncertainties",
+          "type": "array"
         }
       },
       "required": [

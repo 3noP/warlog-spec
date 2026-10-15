@@ -14,7 +14,7 @@ Actions covered (ALL existing canon — no canon delta from this audit) :
 - :data:`ResponseActionId.HASH_UNBLOCK`  → remove from Sandbox blocklist
 - :data:`ResponseActionId.SESSION_TERMINATE` → ZPA app session disconnect
 
-The Zscaler audit (see ``docs/canon-migration/13-zscaler-no-extension.md``)
+The Zscaler audit (no extension, a negative result)
 concluded that Zscaler's response surface maps cleanly onto the existing
 canon. No new ResponseActionId values are added — this connector
 demonstrates that the catalog is well-shaped for the SWG/SSE class.

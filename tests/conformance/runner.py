@@ -68,9 +68,16 @@ def _schema_paths(schemas_dir: Path) -> Iterable[Path]:
         yield path
 
 
-# Productible artifact types — the 18 shapes that an implementation
+# Productible artifact types — the 21 shapes that an implementation
 # MUST produce one example of to claim Level 2. Kept in lockstep with
 # ``warlog_spec.conformance.PRODUCERS`` (the Python reference producer).
+#
+# "Lockstep" was aspirational until 2026-08: this set had drifted to 18 while
+# PRODUCERS held 20, so ``playbook-gate-evaluation`` and ``a2a-attestation``
+# were productible by the reference implementations and NOT required of anyone
+# claiming Level 2. A third-party gateway could have been certified without
+# ever emitting an agent attestation. Adding a type to PRODUCERS means adding
+# it here, and the count in this comment is part of that edit.
 #
 # Enums (common/*.json), envelopes (envelopes/*.json), the
 # decision-artifact-type-mapping, and the action-catalog are NOT
@@ -89,16 +96,19 @@ LEVEL_2_PRODUCTIBLE_SCHEMAS: frozenset[str] = frozenset(
         "artifacts/closure-summary.json",
         "artifacts/enrichment-assessment.json",
         "artifacts/mitre-assessment.json",
+        "artifacts/playbook-gate-evaluation.json",
         "artifacts/risk-arbitration.json",
         "proposals/investigation-summary-proposal.json",
         "proposals/next-step-proposal.json",
         "proposals/playbook-candidate-proposal.json",
         "proposals/triage-proposal.json",
+        "provider-abi/a2a-attestation.json",
         "provider-abi/audit-row.json",
         "provider-abi/connector-capability.json",
         "provider-abi/connector-error.json",
         "provider-abi/response-action-result.json",
         "provider-abi/response-action-spec.json",
+        "provider-abi/scan-verdict.json",
         "provider-abi/signed-audit-row.json",
         "registry/pack-manifest.json",
     }

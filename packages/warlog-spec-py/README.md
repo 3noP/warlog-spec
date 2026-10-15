@@ -1,6 +1,6 @@
 # warlog-spec — Python reference package
 
-**Version**: `0.1.0` — first public release (experimental, pre-v1.0). Install with `pip install warlog-spec`.
+**Version**: `0.2.0` (experimental, pre-v1.0). Install with `pip install warlog-spec`.
 **License**: Apache 2.0
 
 The Python reference implementation of [Warlog Spec][spec] — the
@@ -464,33 +464,33 @@ vendor's published REST contract, not against a mock.
 Each new vendor connector doubles as a canon audit. The current
 catalog reflects two completed audits :
 
-- **Identity** ([`08-identity-gap-audit.md`](../../docs/canon-migration/08-identity-gap-audit.md))
+- **Identity**
   — Okta-driven, identity family went from 3 to 9 actions (added
   `revoke_tokens`, `reset_password`, `expire_password`, `unlock`,
   `group_remove`, `delete`).
-- **Device** ([`09-device-gap-audit.md`](../../docs/canon-migration/09-device-gap-audit.md))
+- **Device**
   — CrowdStrike Falcon-driven, device family extended with
   `host.restart`, `host.collect_artifacts`, `hash.block`.
-- **Network** ([`11-network-gap-audit.md`](../../docs/canon-migration/11-network-gap-audit.md))
+- **Network**
   — Palo Alto PAN-OS-driven, network family extended with
   `ip.unblock`, `domain.unblock`, `url.unblock`, `hash.unblock`,
   and `session.terminate` (covers TCP/UDP flow + GlobalProtect VPN
   via `params['session_type']`).
-- **Email** ([`12-email-gap-audit.md`](../../docs/canon-migration/12-email-gap-audit.md))
+- **Email**
   — Proofpoint-driven, email family extended with
   `email.block_sender`, `email.unblock_sender`, `email.release`.
-- **Zscaler audit (negative result)** ([`13-zscaler-no-extension.md`](../../docs/canon-migration/13-zscaler-no-extension.md))
+- **Zscaler audit (negative result)**
   — ZIA + ZPA + Sandbox map cleanly onto existing canon ; ZPA app
   sessions covered by `session.terminate` w/ `params['session_type']='ztna'`.
   No new actions added. Negative results are evidence the canon is
   well-shaped.
-- **Cloud** ([`15-cloud-gap-audit.md`](../../docs/canon-migration/15-cloud-gap-audit.md))
+- **Cloud**
   — AWS-driven, cross-validated against Azure + GCP. Three new
   families : `iam` (`role_detach`, `credentials_disable`,
   `credentials_rotate`), `key` (`disable`, `rotate`, `schedule_deletion`),
   `storage` (`bucket.lockdown`). Device family extended with
   `host.stop` / `host.delete`. Catalog 35 → 44 actions.
-- **Doctrine refinement** ([`16-doctrine-refinement.md`](../../docs/canon-migration/16-doctrine-refinement.md))
+- **Doctrine refinement**
   — sharpens `DISRUPTIVE` definition (vendor-side reversal, not
   canon-inverse-presence), ships five inverse actions for symmetry
   (`host.start`, `iam.role_attach`, `iam.credentials_enable`,
@@ -500,11 +500,11 @@ catalog reflects two completed audits :
   `iam.credentials_rotate` semantics. Catalog 44 → 49 actions.
 
 Standards alignment is documented in
-[`10-prior-art-mapping.md`](../../docs/canon-migration/10-prior-art-mapping.md) :
+the prior art mapping :
 how Warlog Spec sits relative to OCSF (event schema, we consume),
 STIX 2.1 (descriptive, we import), CACAO (playbook, calls us),
 OpenC2 (wire protocol, we publish a mapping table for interop).
-Same gap-audit template applies to the next vendor families
+The same cross-vendor admission bar applies to the next vendor families
 (Palo Alto network → Zscaler cloud SSE → Proofpoint email →
 Azure/AWS cloud).
 
@@ -517,7 +517,7 @@ from "reference" to "validated".
 
 The roadmap is to extend this catalog with one connector per common
 SOC vendor class (SIEM ingest, IAM, mail security, network, ticketing).
-The 49-action canonical catalog in `warlog_spec.action_catalog` is the
+The 54-action canonical catalog in `warlog_spec.action_catalog` is the
 source of truth for which response primitives a connector can advertise.
 
 ## Verify your conformance
@@ -588,7 +588,7 @@ implementation is on the roadmap once the spec reaches v1.0 stable.
 
 The package versions independently of the ABI version. ABI version is
 declared by `warlog_spec.ABI_VERSION` (currently `"1.0"`) and is the
-authoritative compatibility surface ; the package version (`0.1.0`)
+authoritative compatibility surface ; the package version (`0.2.0`)
 reflects implementation maturity of the Python reference. A connector
 advertises which ABI range it supports via `ConnectorCompat`. See
 [`CHANGELOG.md`](CHANGELOG.md) for the per-release history.
@@ -597,7 +597,7 @@ advertises which ABI range it supports via `ConnectorCompat`. See
 
 Apache 2.0. The reference implementation libraries (this package)
 follow Apache 2.0 to enable embedding in third-party connectors of
-any license. The Warlog runtime that consumes this package follows
-its own AGPL3 + commercial dual model.
+any license. The Warlog runtime that consumes this package is
+proprietary commercial software.
 
 [spec]: ../../warlog-spec/

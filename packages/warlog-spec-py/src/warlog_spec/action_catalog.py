@@ -8,7 +8,7 @@ count, and (optionally) the JSON Schema describing its required
 runtime's approval gate derives its policy defaults from it,
 conformance tooling validates connector capability declarations
 against it, and the catalog audits in
-``docs/canon-migration/`` serve as the human-readable narrative.
+the cross-vendor admission audits serve as the human-readable narrative.
 
 Why this exists as a structured registry instead of prose :
 without it, the runtime had to maintain its own copy of "which
@@ -34,7 +34,8 @@ Adding a new ResponseActionId requires :
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from collections.abc import Mapping
+from typing import Any, NamedTuple, cast
 
 from warlog_spec.provider_abi import (
     ApprovalLevel,
@@ -56,12 +57,16 @@ class ActionMeta(NamedTuple):
 
 
 # =============================================================================
-# Catalog — 35 actions
+# Catalog — 54 actions
 #
-# Reversibility / approval defaults match the corrected classification
-# in docs/canon-migration/14-reversibility-audit.md. Approval defaults
-# follow the doctrine surfaced in that document :
-#   REVERSIBLE  → analyst (auto-execute permitted in low-friction mode)
+# Reversibility / approval defaults follow the reversibility doctrine :
+#   REVERSIBLE  → analyst (auto-execute permitted in low-friction mode).
+#                 file.quarantine, hash.block, email.block_sender and
+#                 user.group_remove read senior with no stated exception;
+#                 they read analyst since 2026-10-12, as this doctrine says.
+#                 The reversible acts that grant (iam.role_attach,
+#                 iam.credentials_enable, key.enable, bucket.unlock) stay
+#                 senior : the acts that grant are the exception.
 #   DISRUPTIVE  → senior  (gated even though inverse exists ; in-flight
 #                          state lost matters)
 #   DESTRUCTIVE → senior  (or manager for irreversible-irreversible
@@ -132,7 +137,7 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         ResponseActionId.FILE_QUARANTINE,
         "device",
         ResponseActionReversibility.REVERSIBLE,
-        ApprovalLevel.SENIOR,
+        ApprovalLevel.ANALYST,
         1,
         None,
         "Move a file to vendor quarantine (releasable).",
@@ -150,7 +155,7 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         ResponseActionId.HASH_BLOCK,
         "device",
         ResponseActionReversibility.REVERSIBLE,
-        ApprovalLevel.SENIOR,
+        ApprovalLevel.ANALYST,
         1,
         None,
         "Add a SHA256 to fleet-wide prevention.",
@@ -223,7 +228,7 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         ResponseActionId.USER_GROUP_REMOVE,
         "identity",
         ResponseActionReversibility.REVERSIBLE,
-        ApprovalLevel.SENIOR,
+        ApprovalLevel.ANALYST,
         1,
         "action-params/user.group_remove.json",
         "Remove user from a (typically privileged) group.",
@@ -269,7 +274,7 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         ResponseActionId.EMAIL_BLOCK_SENDER,
         "email",
         ResponseActionReversibility.REVERSIBLE,
-        ApprovalLevel.SENIOR,
+        ApprovalLevel.ANALYST,
         1,
         None,
         "Add a sender (email or domain) to the tenant blocklist.",
@@ -392,6 +397,34 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         2,
         None,
         "Permanently terminate a compute instance.",
+    ),
+    # --- Device family extension --------------------------------------
+    ActionMeta(
+        ResponseActionId.HOST_WIPE,
+        "device",
+        ResponseActionReversibility.DESTRUCTIVE,
+        ApprovalLevel.MANAGER,
+        2,
+        None,
+        "Factory-erase a managed device (MDM). Destroys the evidence AND "
+        "the workstation; re-provisioning is the only path back.",
+    ),
+    ActionMeta(
+        ResponseActionId.FILE_DETONATE,
+        "device",
+        # VARIES, deliberately: the estate is unchanged (nothing to restore),
+        # and the real consequence — the sample's unrecallable disclosure —
+        # depends on the sandbox tier (a private cloud discloses nothing; a
+        # public tier may share the sample). VARIES is the catalog's slot for
+        # exactly that: no fixed floor, the runtime/playbook decides, analyst
+        # by default. A runtime may run this unattended — the signed row is
+        # the point, not a gate.
+        ResponseActionReversibility.VARIES,
+        ApprovalLevel.ANALYST,
+        1,
+        None,
+        "Submit a sample for sandbox detonation. Estate unchanged; the "
+        "sample's disclosure is unrecallable.",
     ),
     # --- IAM family (cloud audit) -------------------------------------
     ActionMeta(
@@ -538,6 +571,34 @@ _ENTRIES: tuple[ActionMeta, ...] = (
         None,
         "Trigger a playbook (reversibility depends on body).",
     ),
+    # --- Endpoint and identity extension -------------------------------
+    ActionMeta(
+        ResponseActionId.HOST_RUN_SCRIPT,
+        "device",
+        ResponseActionReversibility.VARIES,
+        ApprovalLevel.SENIOR,
+        1,
+        None,
+        "Run a named remediation or rollback script on a host (its body decides).",
+    ),
+    ActionMeta(
+        ResponseActionId.HOST_SCAN,
+        "device",
+        ResponseActionReversibility.REVERSIBLE,
+        ApprovalLevel.NONE,
+        0,
+        None,
+        "Start an on-demand malware scan of a host (changes nothing it finds).",
+    ),
+    ActionMeta(
+        ResponseActionId.USER_REVOKE_OAUTH_GRANT,
+        "identity",
+        ResponseActionReversibility.DESTRUCTIVE,
+        ApprovalLevel.SENIOR,
+        1,
+        None,
+        "Revoke an application's OAuth grant for a user (the user must consent again).",
+    ),
 )
 
 
@@ -667,7 +728,10 @@ def validate_params(
             "params validation requires `pip install warlog-spec[verify]`"
         ) from exc
     validator = Draft202012Validator(schema)
-    errors = sorted(validator.iter_errors(params), key=lambda e: e.path)
+    # The params are JSON by the ABI's contract; the validator types its
+    # instance as the JSON union, which a bare ``object`` value is not.
+    instance = cast("Mapping[str, Any]", params)
+    errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
     if errors:
         messages = [
             f"{'.'.join(str(p) for p in e.absolute_path) or '<root>'}: {e.message}"

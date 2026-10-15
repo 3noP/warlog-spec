@@ -1,0 +1,238 @@
+{
+  "$defs": {
+    "ScanVerdictPayload": {
+      "additionalProperties": false,
+      "description": "The signed claim: what was examined, by what, with what outcome.",
+      "properties": {
+        "agentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Stable identity of the agent whose traffic was scanned, when it proved one. None means the caller was unattested, which is a fact about the call and not a missing field.",
+          "title": "Agentid"
+        },
+        "contentBinding": {
+          "description": "sha256 hex binding this verdict to the exact bytes that were scanned, via compute_content_binding(). The content itself is never carried.",
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Contentbinding",
+          "type": "string"
+        },
+        "detector": {
+          "description": "Name of the detector that produced the finding, e.g. 'regex_egress'.",
+          "minLength": 1,
+          "title": "Detector",
+          "type": "string"
+        },
+        "detectorKind": {
+          "description": "Whether 'clean' means no rule matched, or below a threshold.",
+          "enum": [
+            "deterministic",
+            "model"
+          ],
+          "title": "Detectorkind",
+          "type": "string"
+        },
+        "detectorVersion": {
+          "description": "Version of that detector. Bumped whenever its rule set or weights change: a finding trend that crosses a silent version boundary is not a trend.",
+          "minLength": 1,
+          "title": "Detectorversion",
+          "type": "string"
+        },
+        "direction": {
+          "description": "egress = the agent produced it; ingress = the environment did.",
+          "enum": [
+            "egress",
+            "ingress"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "disposition": {
+          "description": "What the gateway did: recorded it, or refused the call.",
+          "enum": [
+            "observed",
+            "refused"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "finding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Category of what was found, e.g. 'secret.aws_access_key_id'. None means clean. NEVER the matched bytes, the offsets, or any excerpt: a record that quoted the secret it flagged would leak exactly what it exists to protect.",
+          "title": "Finding"
+        },
+        "requestBinding": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The A2A attestation's request_binding for the scanned call, when the call carried one. Identical bytes in both documents are what lets a verifier prove the verdict and the attestation describe the same request. Compute via warlog_spec.a2a.compute_request_binding.",
+          "title": "Requestbinding"
+        },
+        "scannedAt": {
+          "description": "When the content was examined (aware UTC).",
+          "format": "date-time",
+          "title": "Scannedat",
+          "type": "string"
+        },
+        "scoreMilli": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The model's score in thousandths (873 = 0.873), for a model detector. None for a deterministic one, because a rule that matched has no probability and writing 1000 would be a fabricated measurement on the surface that decides a refusal. Integer, not float: see the module docstring on canonical bytes.",
+          "title": "Scoremilli"
+        },
+        "surface": {
+          "description": "Where in the agent's traffic the bytes came from.",
+          "enum": [
+            "llm_request",
+            "llm_response",
+            "mcp_tool_args",
+            "mcp_tool_result",
+            "mcp_resource_result",
+            "mcp_tool_manifest"
+          ],
+          "title": "Surface",
+          "type": "string"
+        },
+        "tenantRef": {
+          "description": "Opaque tenant identifier the scanned traffic belonged to.",
+          "minLength": 1,
+          "title": "Tenantref",
+          "type": "string"
+        },
+        "thresholdMilli": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The threshold the score was compared against, in thousandths. Meaningless without a score.",
+          "title": "Thresholdmilli"
+        },
+        "verdictId": {
+          "description": "Stable identifier for this verdict. Present for identity, not for anti-replay: two identical findings on identical content would otherwise be byte-identical, and an operator could not tell one event from two.",
+          "minLength": 1,
+          "title": "Verdictid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdictId",
+        "tenantRef",
+        "surface",
+        "direction",
+        "detector",
+        "detectorVersion",
+        "detectorKind",
+        "contentBinding",
+        "disposition",
+        "scannedAt"
+      ],
+      "title": "ScanVerdictPayload",
+      "type": "object"
+    },
+    "ScanVerdictSignature": {
+      "additionalProperties": false,
+      "description": "Detached signature envelope for a :class:`ScanVerdictPayload`.\n\nA third sibling of :class:`~warlog_spec.provider_abi.AuditAttestation` and\n:class:`~warlog_spec.a2a.A2ASignature` rather than a shared base class, and\nthat is deliberate. Each artifact owning its own wire type is what stops a\nchange made for one from silently altering another's canonical bytes; a\ncommon base would couple three signature formats that must be free to\ndiverge. RFC-0005 set this precedent for the same reason.",
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "default": "Ed25519",
+          "description": "Signature algorithm. Ed25519 only in v1 (RFC-0004 asymmetric path).",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "canonicalizationFormat": {
+          "const": "v1",
+          "default": "v1",
+          "description": "Canonical-bytes format identifier, decoupled from the payload's spec_version.",
+          "title": "Canonicalizationformat",
+          "type": "string"
+        },
+        "keyId": {
+          "description": "Reference resolving to the Ed25519 public key of the GATEWAY that signed this verdict (RFC-0004 semantics). Not the detector's key: the detector reports, the enforcement point attests.",
+          "minLength": 1,
+          "title": "Keyid",
+          "type": "string"
+        },
+        "signatureValue": {
+          "description": "Hex-encoded Ed25519 signature over the domain-separated canonical payload bytes (64 bytes -> 128 hex).",
+          "maxLength": 128,
+          "minLength": 128,
+          "pattern": "^[0-9a-f]+$",
+          "title": "Signaturevalue",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signatureValue",
+        "keyId"
+      ],
+      "title": "ScanVerdictSignature",
+      "type": "object"
+    }
+  },
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/ScanVerdict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The full, signed verdict envelope.",
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/ScanVerdictPayload"
+    },
+    "signature": {
+      "$ref": "#/$defs/ScanVerdictSignature"
+    },
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "payload",
+    "signature"
+  ],
+  "title": "ScanVerdict",
+  "type": "object"
+}

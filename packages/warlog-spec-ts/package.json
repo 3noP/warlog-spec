@@ -1,7 +1,7 @@
 {
   "name": "@warlog/spec",
-  "version": "0.1.0",
-  "description": "Warlog Spec — canonical workflow contract for Security Operations. Zod schemas, types, HMAC audit-chain primitives, and 18 productible artifact factories for the TypeScript ecosystem.",
+  "version": "0.2.0",
+  "description": "Warlog Spec — canonical workflow contract for Security Operations. Zod schemas, types, HMAC audit-chain primitives, and 21 productible artifact factories for the TypeScript ecosystem.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.cjs",

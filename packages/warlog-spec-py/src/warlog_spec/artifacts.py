@@ -24,7 +24,7 @@ tooling never depend on which specific enricher produced an artifact
 — only on the canonical shape.
 
 Doctrine note : these types are PROMOTED here from
-``backend/app/schemas/canonical.py`` exactly as they were in the
+the Warlog platform's canonical models exactly as they were in the
 Warlog product. Same fields, same defaults, same camelCase wire
 format. The backend re-exports from here ; there is no duplication.
 """
@@ -38,6 +38,9 @@ from typing import Literal
 from pydantic import Field
 
 from warlog_spec._base import SpecModel
+# Shared with the write side so the two never drift on what a content hash
+# looks like. provider_abi does not import this module, so no cycle.
+from warlog_spec.provider_abi import HEX64_PATTERN
 from warlog_spec.enums import (
     AlertCategory,
     AlertSeverity,
@@ -494,6 +497,58 @@ class AcceptedRisk(SpecModel):
     description: str = Field(min_length=1)
 
 
+class ResponseActionRequestRef(SpecModel):
+    """Pointer back at the request an :class:`ApprovalDecision` resolves.
+
+    Mirrors the :class:`~warlog_spec.provider_abi.ResponseActionSpec`
+    triple (action_id, subject, idempotency_key) so a runtime can
+    correlate the approval back to the originating request without
+    holding the full spec.
+    """
+
+    action_id: str = Field(min_length=1)
+    subject_kind: str = Field(min_length=1)
+    subject_value: str = Field(min_length=1)
+    idempotency_key: str = Field(min_length=1)
+
+
+class ClaimRef(SpecModel):
+    """One claim of the evidence a signer read, pinned by its content.
+
+    ``content_hash`` is sha256 over the claim as it was served to the
+    signer (canonical bytes, the hash field itself left out). A claim
+    that changed after the signature — re-derived, ratified, disputed —
+    no longer hashes the same, so the arbitration says exactly which
+    reading of the evidence it rests on.
+    """
+
+    claim_id: str = Field(min_length=1)
+    content_hash: str = Field(min_length=64, max_length=64, pattern=HEX64_PATTERN)
+
+
+class HumanSignature(SpecModel):
+    """A person's own Ed25519 signature over the statement they signed.
+
+    ``statement`` is the exact UTF-8 text that was signed (canonical
+    JSON: sorted keys, no insignificant whitespace, no float), so a
+    verifier holding ``public_key`` checks ``signature_value`` over
+    those bytes without re-deriving anything, then reads what the
+    statement says and compares it with the payload around it.
+
+    ``key_id`` is the lowercase hex sha256 of the raw public key; both
+    binary values are unpadded base64url. The private half never leaves
+    the signer's device, so a platform holding this record cannot have
+    produced the signature.
+    """
+
+    algorithm: Literal["Ed25519"] = "Ed25519"
+    key_id: str = Field(min_length=64, max_length=64, pattern=HEX64_PATTERN)
+    public_key: str = Field(min_length=1)
+    signed_at: datetime
+    statement: str = Field(min_length=2)
+    signature_value: str = Field(min_length=1)
+
+
 class RiskArbitrationPayload(SpecModel):
     """Body of a :class:`RiskArbitration` artifact.
 
@@ -502,6 +557,12 @@ class RiskArbitrationPayload(SpecModel):
     explicitly accepted, until when. Referenced by
     :class:`~warlog_spec.provider_abi.AuditRow.decision_ref` when an
     arbitration legitimizes an action.
+
+    A standing arbitration (a dérogation) leaves the four last fields
+    empty. A per-request arbitration — one person deciding one
+    proposal — fills them : the decision, the request it answers, the
+    claims of the evidence the signer read, and the signer's own
+    signature over all of it.
     """
 
     authority: ArbitrationAuthority
@@ -511,6 +572,10 @@ class RiskArbitrationPayload(SpecModel):
     valid_from: datetime
     valid_until: datetime
     justification: str = Field(min_length=1)
+    decision: Literal["approved", "denied"] | None = None
+    request_ref: ResponseActionRequestRef | None = None
+    claims: list[ClaimRef] = Field(default_factory=list)
+    signature: HumanSignature | None = None
 
 
 class RiskArbitration(CanonicalArtifact):
@@ -529,21 +594,6 @@ class RiskArbitration(CanonicalArtifact):
     """
 
     payload: RiskArbitrationPayload
-
-
-class ResponseActionRequestRef(SpecModel):
-    """Pointer back at the request an :class:`ApprovalDecision` resolves.
-
-    Mirrors the :class:`~warlog_spec.provider_abi.ResponseActionSpec`
-    triple (action_id, subject, idempotency_key) so a runtime can
-    correlate the approval back to the originating request without
-    holding the full spec.
-    """
-
-    action_id: str = Field(min_length=1)
-    subject_kind: str = Field(min_length=1)
-    subject_value: str = Field(min_length=1)
-    idempotency_key: str = Field(min_length=1)
 
 
 class ApprovalDecisionPayload(SpecModel):
@@ -574,6 +624,77 @@ class ApprovalDecisionPayload(SpecModel):
     )
 
 
+class MatchedTriggerCondition(SpecModel):
+    """One trigger condition, paired with what was actually observed.
+
+    ``expected`` is configuration and can be re-read from the playbook
+    at any time ; ``observed`` is evidence and cannot. It is the value
+    the condition read off THIS signal at trigger time, which is the
+    part nobody can reconstruct once the signal has moved on — an
+    alert gets re-scored, re-categorized, closed. Recording only the
+    configuration would produce an artifact that looks like proof and
+    proves nothing.
+
+    ``observed`` is nullable because a condition can be evaluated
+    against a field the signal does not carry ; ``null`` is then the
+    honest record of "the field was absent", not a missing value.
+    """
+
+    field: str = Field(min_length=1)
+    operator: str = Field(min_length=1)
+    expected: str
+    observed: str | None = None
+
+
+class PlaybookGateEvaluationPayload(SpecModel):
+    """Body of a :class:`PlaybookGateEvaluation` artifact.
+
+    Under AND semantics a match means every condition held, so
+    ``matched_conditions`` is the full evaluated set rather than a
+    subset — a reader can therefore treat it as the complete reason.
+
+    ``conditions_source_hash`` pins the playbook configuration that
+    was evaluated : it is sha256 of the canonical-bytes serialization
+    of the trigger-condition list as stored on the playbook. An
+    auditor comparing it against the playbook's current conditions
+    can tell whether the rule that fired still exists in that form,
+    which is the difference between "these conditions matched" and
+    "these conditions matched and here is the rule that held them".
+    """
+
+    playbook_id: str = Field(min_length=1)
+    playbook_version: int = Field(ge=1)
+    matched_conditions: list[MatchedTriggerCondition] = Field(min_length=1)
+    evaluated_at: datetime
+    conditions_source_hash: str = Field(
+        min_length=64,
+        max_length=64,
+        pattern=HEX64_PATTERN,
+        description="sha256 of the canonical-bytes serialization of the evaluated trigger conditions",
+    )
+
+
+class PlaybookGateEvaluation(CanonicalArtifact):
+    """Typed record of the deterministic gate that fired an unattended run.
+
+    The decision artifact for an action nobody decided. A human click
+    produces an :class:`ApprovalDecision` and a model proposal
+    produces a ``*Proposal``; a published playbook whose trigger
+    conditions matched produces neither, yet
+    :attr:`~warlog_spec.provider_abi.AuditRow.decision_ref` is
+    REQUIRED — deliberately, because an action with no traceable
+    decision is exactly what must not be writable. This artifact is
+    what that pointer aims at, so the requirement is satisfied by a
+    real object instead of being relaxed.
+
+    Rides inside :class:`ArtifactEnvelope` with
+    ``producer.kind = "rule"`` : the producer was configuration, not a
+    person and not a model.
+    """
+
+    payload: PlaybookGateEvaluationPayload
+
+
 class ApprovalDecision(CanonicalArtifact):
     """Typed, signed record of an approval decision.
 
@@ -601,6 +722,7 @@ __all__ = [
     "ArtifactReviewState",
     "CanonicalArtifact",
     "CaseReturnSummary",
+    "ClaimRef",
     "ClassificationAssessment",
     "ClassificationDecision",
     "ClosureSummary",
@@ -609,9 +731,13 @@ __all__ = [
     "EnrichmentAssessmentPayload",
     "EnrichmentRequest",
     "ExtractedIOC",
+    "HumanSignature",
+    "MatchedTriggerCondition",
     "MitreAssessment",
     "MitreMapping",
     "NormalizedEntity",
+    "PlaybookGateEvaluation",
+    "PlaybookGateEvaluationPayload",
     "PolicyRef",
     "ResponseActionRequestRef",
     "RiskArbitration",

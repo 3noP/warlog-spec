@@ -145,7 +145,7 @@ class CaseCategory(enum.StrEnum):
 
 
 class EntityType(enum.StrEnum):
-    """Normalized entity type — 12-value canonical taxonomy."""
+    """Normalized entity type — 13-value canonical taxonomy."""
 
     HOST = "host"
     USER = "user"
@@ -158,6 +158,10 @@ class EntityType(enum.StrEnum):
     REGISTRY = "registry"
     VULNERABILITY = "vulnerability"
     CERTIFICATE = "certificate"
+    #: What a cloud provider's audit names an action on: a bucket, a role, an
+    #: instance, a key; keyed by the provider's own identifier (an ARN, an
+    #: Azure resource id, a GCP resource name).
+    CLOUD_RESOURCE = "cloud_resource"
     OTHER = "other"
 
 

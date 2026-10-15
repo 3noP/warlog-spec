@@ -4,14 +4,14 @@
 >
 > *OCSF answers "what happened?". Warlog Spec answers "what do we do about it?".*
 
-**Status** : ABI `v1.0`, spec packages at `v0.1.0` — first public
-release. 41 schema entries plus manifest, 49-action canonical response
-catalog, 4 ratified RFCs, two reference implementations (Python
-`warlog-spec` 0.1.0, TypeScript `@warlog/spec` 0.1.0) producing byte-
-equivalent canonical output. The contract is open to community review
-until v1.0 stable ; breaking changes between v0.1 and v0.2 are
-explicitly allowed and welcome. We accept RFCs against it through the
-process documented in [`rfcs/`](rfcs/).
+**Status** : ABI `v1.0`, spec packages at `v0.2.0`. 46 schema entries
+plus manifest, 54-action canonical response catalog, 6 accepted RFCs and
+1 draft, two reference implementations (Python `warlog-spec` 0.2.0,
+TypeScript `@warlog/spec` 0.2.0) producing byte-equivalent canonical
+output. The contract is open to community review until v1.0 stable ;
+breaking changes between minor versions are explicitly allowed and
+welcome. We accept RFCs against it through the process documented in
+[`rfcs/`](rfcs/).
 
 ## What is this
 
@@ -100,9 +100,9 @@ warlog-spec/
 ├── THREAT-MODEL.md       ← what the spec protects against and what it does not
 ├── CHANGELOG.md          ← release notes
 ├── LICENSE               ← Apache 2.0
-├── schemas/              ← 41 schema entries plus manifest — the contract
+├── schemas/              ← 46 schema entries plus manifest — the contract
 │   ├── manifest.json     ← index of all published schemas
-│   ├── common/           ← 11 enum schemas
+│   ├── common/           ← 15 enum schemas
 │   ├── action-params/    ← parameter schemas for selected response actions
 │   ├── envelopes/        ← artifact + proposal envelopes
 │   ├── artifacts/        ← classification, MITRE, enrichment, closure, case-return
@@ -112,19 +112,20 @@ warlog-spec/
 ├── examples/             ← canonical examples per artifact (round-trip-validated)
 ├── docs/                 ← quickstart, adoption, provider authoring, standards notes
 ├── registry/             ← static v0 registry preview (not hosted service)
-├── rfcs/                 ← 4 ratified RFCs (trust-layer, AiAgentRef extensions,
-│                            STIX projection, asymmetric signatures)
+├── rfcs/                 ← 7 RFCs, 6 accepted (trust-layer, AiAgentRef extensions,
+│                            STIX projection, asymmetric signatures, A2A attestation,
+│                            content scan verdict) and 1 draft (entity naming forms)
 └── tests/conformance/    ← runner.py + negative corpus
 
 ../packages/                ← sibling reference implementations
-├── warlog-spec-py/         ← Python package (Pydantic), 0.1.0 on PyPI
-└── warlog-spec-ts/         ← TypeScript package (Zod), 0.1.0 on npm
+├── warlog-spec-py/         ← Python package (Pydantic), 0.2.0 on PyPI
+└── warlog-spec-ts/         ← TypeScript package (Zod), 0.2.0 on npm
 ```
 
 ## Where to find the schemas
 
 The canonical JSON Schemas live in this directory under `schemas/`.
-`schemas/manifest.json` is the authoritative index for the v0.1 release.
+`schemas/manifest.json` is the authoritative index for the v0.2 release.
 The public Pages deployment serves the same tree as static files at the
 URL pattern:
 
@@ -251,16 +252,19 @@ approval thresholds, and the document structure.
 | [0002](rfcs/0002-ai-agent-ref-extensions.md) | AiAgentRef extensions for multi-agent and tool-using compositions | Accepted, Implemented |
 | [0003](rfcs/0003-stix-projection.md) | Outbound STIX 2.1 projection of CaseReturnSummary | Accepted, Implemented |
 | [0004](rfcs/0004-asymmetric-signatures.md) | Asymmetric signatures (Ed25519, RSASSA-PSS) for AuditAttestation | Accepted, Schema Implemented |
+| [0005](rfcs/0005-a2a-agent-attestation.md) | A2A (Agent2Agent) agent attestation in transport metadata | Accepted, Reference Implemented |
+| [0006](rfcs/0006-content-scan-verdict.md) | Content scan verdict — a portable signed record of what a guardrail saw | Accepted, Reference Implemented |
+| [0007](rfcs/0007-entity-naming-forms.md) | Entity naming forms — how a connector's tool names an account and a host | Draft, Reference Implemented |
 
 ## How to engage
 
-This is the **first public release of an open spec at v0.1**. The
-contract is stable enough that two reference implementations produce
-byte-equivalent output against it, but v0.1 is explicitly experimental :
-breaking changes between v0.1 and v0.2 are allowed during the public-
-feedback window. We use plain `0.1.0` rather than `0.1.0rc1` because rc
-implies "candidate for stable" — that is not the position of this
-release. See [`VERSIONING.md`](VERSIONING.md) for the doctrine on what
+This is an **open spec at v0.2**. The contract is stable enough that
+two reference implementations produce byte-equivalent output against it,
+but v0.x is explicitly experimental : breaking changes between minor
+versions are allowed during the public-feedback window. We use plain
+`0.2.0` rather than `0.2.0rc1` because rc implies "candidate for stable"
+— that is not the position of this release. See
+[`VERSIONING.md`](VERSIONING.md) for the doctrine on what
 triggers v1.0 stable (three external adopters validating it in their
 stacks, plus the conditions documented there).
 
@@ -285,7 +289,7 @@ The reference implementation libraries shipped alongside the spec
 are also licensed under Apache 2.0 so third-party connector authors can
 embed the contract primitives without copyleft friction. The full Warlog
 runtime that consumes these packages remains licensed separately under
-the parent project's AGPL3 + commercial dual model.
+the parent project's proprietary commercial license.
 
 ## Governance
 

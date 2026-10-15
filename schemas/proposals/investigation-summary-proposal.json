@@ -88,7 +88,7 @@
     },
     "InvestigationSummaryProposalPayload": {
       "additionalProperties": false,
-      "description": "Synthesized investigation summary : findings, hypothesis,\nimpact, recommended next steps, unresolved questions.\n\nProduced at L1\u2192L2 handoff (case escalation) or at case closure\n(becomes part of the :class:`~warlog_spec.artifacts.CaseReturnSummary`).",
+      "description": "Synthesized investigation summary : findings, hypothesis,\nimpact, recommended next steps, unresolved questions, ruled-out\nalternatives.\n\nProduced at L1\u2192L2 handoff (case escalation) or at case closure\n(becomes part of the :class:`~warlog_spec.artifacts.CaseReturnSummary`).",
       "properties": {
         "summary": {
           "title": "Summary",
@@ -137,6 +137,13 @@
             "type": "string"
           },
           "title": "Unresolvedquestions",
+          "type": "array"
+        },
+        "ruledOutHypotheses": {
+          "items": {
+            "$ref": "#/$defs/RuledOutHypothesis"
+          },
+          "title": "Ruledouthypotheses",
           "type": "array"
         },
         "confidence": {
@@ -211,6 +218,26 @@
         "rationale"
       ],
       "title": "ProposalEnvelope",
+      "type": "object"
+    },
+    "RuledOutHypothesis": {
+      "additionalProperties": false,
+      "description": "A hypothesis the analysis considered and eliminated, with the reasoning\nthat ruled it out. Preserving ruled-out alternatives (not just the active\nhypothesis) is what stops the next stage from re-running disconfirming work\nalready done.",
+      "properties": {
+        "hypothesis": {
+          "title": "Hypothesis",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hypothesis",
+        "rationale"
+      ],
+      "title": "RuledOutHypothesis",
       "type": "object"
     }
   },

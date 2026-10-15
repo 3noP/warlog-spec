@@ -1,7 +1,7 @@
 # @warlog/spec
 
 Warlog Spec — TypeScript reference implementation. The same contract
-as the Python `warlog-spec` package : 18 productible artifact types,
+as the Python `warlog-spec` package : 21 productible artifact types,
 Zod schemas for runtime validation, HMAC audit-chain primitives that
 byte-equivalent the Python canonicalization.
 
@@ -20,10 +20,9 @@ npm install @warlog/spec
 pnpm add @warlog/spec
 ```
 
-This is `v0.1.0` — the first public release. It is explicitly
-experimental : breaking changes between v0.1 and v0.2 are allowed
-during the public-feedback window. We do not use a `rc` suffix
-because rc implies "candidate for stable" — that is not the position
+This is `v0.2.0`. It is explicitly experimental : breaking changes
+between minor versions are allowed during the public-feedback
+window. We do not use a `rc` suffix because rc implies "candidate for stable" — that is not the position
 of this release. See `CHANGELOG.md` for the doctrine.
 
 ## Usage
@@ -88,7 +87,7 @@ npm exec --package @warlog/spec -- warlog-spec dump --out ./fixtures
 
 ## Conformance
 
-Level 2 (Write) : `@warlog/spec` produces 18/18 productible canonical
+Level 2 (Write) : `@warlog/spec` produces 21/21 productible canonical
 types. Each factory output validates against the JSON Schema in
 `warlog-spec/schemas/`. Validate it yourself :
 

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/CaseSeverity.json",
+  "title": "CaseSeverity",
+  "description": "Case severity, the same scale alerts are graded on. A case inherits the severity of what opened it and an analyst may regrade it.",
+  "type": "string",
+  "enum": [
+    "critical",
+    "high",
+    "medium",
+    "low",
+    "info",
+    "unknown"
+  ]
+}

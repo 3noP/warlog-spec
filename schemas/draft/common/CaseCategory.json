@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/common/CaseCategory.json",
+  "title": "CaseCategory",
+  "description": "What kind of incident a case is. Aligned with the ATT&CK tactic vocabulary where one applies, with `needs_review` for a case nobody has classified yet and `unknown` for one that resists classification.",
+  "type": "string",
+  "enum": [
+    "malware",
+    "phishing",
+    "credential_access",
+    "data_breach",
+    "insider_threat",
+    "denial_of_service",
+    "unauthorized_access",
+    "lateral_movement",
+    "execution",
+    "persistence",
+    "exfiltration",
+    "policy_violation",
+    "reconnaissance",
+    "impact",
+    "other",
+    "unknown",
+    "needs_review"
+  ]
+}

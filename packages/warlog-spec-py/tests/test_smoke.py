@@ -82,24 +82,22 @@ def test_response_action_id_catalog_size() -> None:
 
     Extensions (2026-05-07):
     - Identity (Okta-driven): revoke_tokens, reset_password, expire_password,
-      unlock, group_remove, delete (see 08-identity-gap-audit.md)
-    - Device (Falcon-driven): restart, collect_artifacts, hash.block (see
-      09-device-gap-audit.md)
+      unlock, group_remove, delete
+    - Device (Falcon-driven): restart, collect_artifacts, hash.block
     - Network (PAN-OS-driven): ip/domain/url.unblock, hash.unblock,
-      session.terminate (see 11-network-gap-audit.md)
+      session.terminate
     - Email (Proofpoint-driven): block_sender, unblock_sender, release
-      (see 12-email-gap-audit.md)
     - Cloud (AWS/Azure/GCP-driven): host.stop, host.delete, iam.role_detach,
       iam.credentials_disable, iam.credentials_rotate, key.disable, key.rotate,
       key.schedule_deletion, bucket.lockdown — 9 actions across new families
-      iam/key/storage + device extension (see 15-cloud-gap-audit.md)
-    - Inverse symmetry (post-review, audit 16): host.start, iam.role_attach,
+      iam/key/storage + device extension
+    - Inverse symmetry: host.start, iam.role_attach,
       iam.credentials_enable, key.enable, bucket.unlock. Doctrine refinement
       clarifies DISRUPTIVE = vendor-side reversal exists, regardless of
       whether canon ships the inverse — but shipping inverses where they
       are real IR primitives keeps the catalog symmetric.
     """
-    assert len(list(ResponseActionId)) == 49
+    assert len(list(ResponseActionId)) == 54
 
 
 def test_action_catalog_is_complete() -> None:
@@ -144,7 +142,7 @@ def test_action_catalog_entries_are_well_formed() -> None:
 
 
 def test_action_catalog_reversibility_drives_approval() -> None:
-    """Reversibility doctrine in audit 14 maps to approval defaults :
+    """The reversibility doctrine maps to approval defaults :
     REVERSIBLE → analyst (or NONE for auto-exec workflow), DISRUPTIVE →
     senior, DESTRUCTIVE → senior or manager. Drift here is doctrine drift."""
     for action_id, meta in ACTION_CATALOG.items():
@@ -744,13 +742,23 @@ def test_action_catalog_helpers_round_trip() -> None:
     assert reviewers >= 2
 
 
-def test_failure_categories_are_five() -> None:
+def test_failure_categories_are_the_five_vendor_classes_plus_unknown() -> None:
+    """The taxonomy is closed, and ``unknown`` is the deliberate escape hatch.
+
+    A vendor connector maps its own error taxonomy and therefore always knows
+    which of the five applies. ``unknown`` exists for producers that are not
+    connectors — a platform action registry reports THAT a step failed, never
+    why in vendor terms — because the alternative is asserting a class it
+    cannot support: ``transient`` invites a retry of a possibly irreversible
+    action, ``policy`` blames a rule that may not exist.
+    """
     assert {c.value for c in FailureCategory} == {
         "auth",
         "not_found",
         "state_conflict",
         "transient",
         "policy",
+        "unknown",
     }
 
 

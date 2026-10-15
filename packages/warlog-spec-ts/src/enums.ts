@@ -120,18 +120,20 @@ export type CaseCategoryValue = AlertCategoryValue;
 // Entity / IOC enums
 // ----------------------------------------------------------------------------
 
+/** The canonical entity taxonomy, value for value `warlog_spec.enums.EntityType`. */
 export const EntityType = freeze({
   HOST: "host",
   USER: "user",
   IP: "ip",
   DOMAIN: "domain",
   URL: "url",
-  HASH: "hash",
   FILE: "file",
   PROCESS: "process",
   EMAIL: "email",
-  ASSET_GROUP: "asset_group",
-  ORGANIZATION: "organization",
+  REGISTRY: "registry",
+  VULNERABILITY: "vulnerability",
+  CERTIFICATE: "certificate",
+  CLOUD_RESOURCE: "cloud_resource",
   OTHER: "other",
 } as const);
 export type EntityTypeValue = (typeof EntityType)[keyof typeof EntityType];

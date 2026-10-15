@@ -53,7 +53,6 @@ class ResponseActionId(StrEnum):
     # collection, and hash-based prevention — primitives every major
     # EDR (Falcon, Defender, SentinelOne, Carbon Black) exposes
     # explicitly. Cross-vendor verified before admission.
-    # See docs/canon-migration/09-device-gap-audit.md.
     HOST_RESTART = "host.restart"
     HOST_COLLECT_ARTIFACTS = "host.collect_artifacts"
     HASH_BLOCK = "hash.block"
@@ -64,7 +63,6 @@ class ResponseActionId(StrEnum):
     # session termination (firewalls block new flows but existing
     # flows survive until reset). Palo Alto + Cisco Firepower +
     # Fortinet FortiGate + Check Point all expose these.
-    # See docs/canon-migration/11-network-gap-audit.md.
     IP_UNBLOCK = "ip.unblock"
     DOMAIN_UNBLOCK = "domain.unblock"
     URL_UNBLOCK = "url.unblock"
@@ -74,36 +72,46 @@ class ResponseActionId(StrEnum):
     # Justification : original two (quarantine, recall) miss sender-
     # side actions and quarantine release. Proofpoint + M365 Defender
     # for Email + Mimecast + Cisco Email Security + Google Workspace
-    # all expose these. See docs/canon-migration/12-email-gap-audit.md.
+    # all expose these.
     EMAIL_BLOCK_SENDER = "email.block_sender"
     EMAIL_UNBLOCK_SENDER = "email.unblock_sender"
     EMAIL_RELEASE = "email.release"
-    # --- Compute / device extension (cloud audit, additive) -----------
+    # --- Compute / device extension (cloud, additive) -----------------
     HOST_STOP = "host.stop"
-    HOST_START = "host.start"  # inverse of host.stop (audit 16)
+    HOST_START = "host.start"  # inverse of host.stop
     HOST_DELETE = "host.delete"
-    # --- IAM family (cloud audit, additive) ---------------------------
+    # --- Device family extension (additive within ABI 1.0) ------------
+    # Justification : two acts that were being run without a catalogued
+    # identity. ``host.wipe`` is a first-class MDM command on Intune, Jamf,
+    # Omnissa Workspace ONE and Google endpoint management (4/4) — and
+    # the most destructive act a runtime can template was the least
+    # provable one. ``file.detonate`` is sandbox submission
+    # (Falcon Sandbox, WildFire, Joe, VMRay; Defender partial): the
+    # estate is unchanged but the sample's disclosure is unrecallable,
+    # and it runs unattended — exactly the acts a signed row exists for.
+    HOST_WIPE = "host.wipe"
+    FILE_DETONATE = "file.detonate"
+    # --- IAM family (cloud, additive) ---------------------------------
     # Justification : cloud-IAM primitives are operationally distinct
     # from human-user identity primitives (the user.* family). A
     # service principal / machine identity has roles attached, access
     # keys / SAS tokens / service-account keys, and assumed-session
     # tokens. These need their own canonical actions because the IR
     # response shape differs from the user.* family. Cross-validated
-    # against AWS IAM, Azure RBAC, and GCP IAM. See
-    # docs/canon-migration/15-cloud-gap-audit.md.
+    # against AWS IAM, Azure RBAC, and GCP IAM.
     IAM_ROLE_DETACH = "iam.role_detach"
-    IAM_ROLE_ATTACH = "iam.role_attach"  # inverse of iam.role_detach (audit 16)
+    IAM_ROLE_ATTACH = "iam.role_attach"  # inverse of iam.role_detach
     IAM_CREDENTIALS_DISABLE = "iam.credentials_disable"
-    IAM_CREDENTIALS_ENABLE = "iam.credentials_enable"  # inverse (audit 16)
+    IAM_CREDENTIALS_ENABLE = "iam.credentials_enable"  # inverse of iam.credentials_disable
     IAM_CREDENTIALS_ROTATE = "iam.credentials_rotate"
-    # --- Key/secret family (cloud audit, additive) --------------------
+    # --- Key/secret family (cloud, additive) --------------------------
     KEY_DISABLE = "key.disable"
-    KEY_ENABLE = "key.enable"  # inverse of key.disable (audit 16)
+    KEY_ENABLE = "key.enable"  # inverse of key.disable
     KEY_ROTATE = "key.rotate"
     KEY_SCHEDULE_DELETION = "key.schedule_deletion"
-    # --- Storage family (cloud audit, additive) -----------------------
+    # --- Storage family (cloud, additive) -----------------------------
     BUCKET_LOCKDOWN = "bucket.lockdown"
-    BUCKET_UNLOCK = "bucket.unlock"  # inverse of bucket.lockdown (audit 16)
+    BUCKET_UNLOCK = "bucket.unlock"  # inverse of bucket.lockdown
     USER_DISABLE = "user.disable"
     USER_FORCE_LOGOUT = "user.force_logout"
     USER_RESET_MFA = "user.reset_mfa"
@@ -112,7 +120,7 @@ class ResponseActionId(StrEnum):
     # reset_mfa) miss the most common identity-IR primitives surfaced
     # by every major IAM (Okta, Azure AD, Google Workspace, AD).
     # Vendor-neutrality verified against those four catalogs before
-    # admission. See docs/canon-migration/08-identity-gap-audit.md.
+    # admission.
     USER_REVOKE_TOKENS = "user.revoke_tokens"
     USER_RESET_PASSWORD = "user.reset_password"
     USER_EXPIRE_PASSWORD = "user.expire_password"
@@ -128,6 +136,18 @@ class ResponseActionId(StrEnum):
     ALERT_ACKNOWLEDGE = "alert.acknowledge"
     CASE_UPDATE_STATUS = "case.update_status"
     PLAYBOOK_TRIGGER = "playbook.trigger"
+    # --- Endpoint and identity extension (additive within ABI 1.0) ------
+    # Justification : three acts a runtime commonly offers had no
+    # catalogued identity, so no connector could serve them and no
+    # runner could sign them. Each meets the same cross-vendor bar
+    # (three of four major vendors) : script execution on an endpoint
+    # (Falcon RTR, Defender Live Response, SentinelOne RemoteOps, Carbon
+    # Black Live Response), an on-demand malware scan (Falcon ODS,
+    # Defender, SentinelOne), and the revocation of an application's
+    # OAuth grant for a user (Entra, Okta, Google Workspace).
+    HOST_RUN_SCRIPT = "host.run_script"
+    HOST_SCAN = "host.scan"
+    USER_REVOKE_OAUTH_GRANT = "user.revoke_oauth_grant"
 
 
 class ResponseActionScope(StrEnum):
@@ -252,6 +272,14 @@ class FailureCategory(StrEnum):
     STATE_CONFLICT = "state_conflict"
     TRANSIENT = "transient"
     POLICY = "policy"
+    #: The producer could not classify the failure. Reserved for producers
+    #: that are NOT vendor connectors (a platform action registry, an internal
+    #: executor) : a connector maps its vendor's error taxonomy and therefore
+    #: always knows better than this. It exists because the alternative for a
+    #: non-connector producer is to assert a class it cannot support —
+    #: ``transient`` invites a retry nobody verified was safe, ``policy``
+    #: blames a rule that may not exist.
+    UNKNOWN = "unknown"
 
 
 class ExecutionPhase(StrEnum):
@@ -427,6 +455,35 @@ class LifecycleDescriptor(SpecModel):
     supports_paused_state: bool = False
 
 
+class AccountForm(StrEnum):
+    """A form in which a tool names an account (RFC-0007)."""
+
+    UPN = "upn"  # a sign-in name: jdoe@corp.example
+    EMAIL = "email"  # a mailbox address
+    SAM = "sam"  # a bare account name: jdoe
+    DOMAIN_SAM = "domain_sam"  # a down-level logon name: CORP\\jdoe
+    OBJECT_ID = "object_id"  # the directory's immutable identifier
+
+
+class HostForm(StrEnum):
+    """A form in which a tool names a host (RFC-0007)."""
+
+    DEVICE_ID = "device_id"  # the tool's own device identifier
+    SHORT = "short"  # a computer name without its domain: LT-0412
+    FQDN = "fqdn"  # the fully qualified name: lt-0412.corp.example
+
+
+class NamingDescriptor(SpecModel):
+    """How the connector's upstream tool names the entities it acts on
+    (RFC-0007): the forms it accepts, preferred first. An empty list states
+    nothing, and a runtime passes the subject as it would without it; a
+    non-empty one obliges the runtime to render the subject in a listed form,
+    or to refuse the action."""
+
+    account: list[AccountForm] = Field(default_factory=list)
+    host: list[HostForm] = Field(default_factory=list)
+
+
 class ConnectorCompat(SpecModel):
     """Spec compatibility range the connector claims to support."""
 
@@ -454,6 +511,7 @@ class ConnectorCapability(SpecModel):
     enrichment: EnrichmentDescriptor = Field(default_factory=EnrichmentDescriptor)
     dry_run: DryRunDescriptor = Field(default_factory=DryRunDescriptor)
     lifecycle: LifecycleDescriptor = Field(default_factory=LifecycleDescriptor)
+    naming: NamingDescriptor = Field(default_factory=NamingDescriptor)
     compat: ConnectorCompat
 
 
@@ -727,11 +785,47 @@ class AutomationActor(SpecModel):
     agent: AiAgentRef
 
 
+class SystemActor(SpecModel):
+    """A deterministic platform mechanism initiated this action.
+
+    The third actor kind exists because the first two cannot describe
+    an unattended, rule-driven execution honestly. A published
+    playbook whose trigger conditions matched an incoming alert acts
+    with no human in the loop (so :class:`HumanActor` would attribute
+    a machine action to a person) and with no model in the loop (so
+    :class:`AutomationActor`, whose :class:`AiAgentRef` is REQUIRED
+    precisely to prove *which model* authorized the action, would
+    have to fabricate the EU AI Act traceability anchor it exists to
+    carry).
+
+    Use ``system`` when the decision was made by evaluating
+    deterministic configuration — trigger conditions, a scheduled
+    sweep, a policy threshold. Use ``automation`` the moment a model
+    chose the action ; the distinction is what lets an auditor filter
+    "actions an AI decided" from "actions our rules decided", and
+    collapsing the two makes both claims unfalsifiable.
+
+    ``mechanism`` names the deterministic decider (``playbook``,
+    ``scheduled_sweep``, …) so a consumer can tell WHICH mechanism
+    without parsing ``id``.
+    """
+
+    kind: Literal["system"] = "system"
+    id: str = Field(
+        min_length=1,
+        description="Stable identifier of the mechanism instance (playbook id, sweep name)",
+    )
+    mechanism: str = Field(
+        min_length=1,
+        description="Class of deterministic decider (e.g. 'playbook', 'scheduled_sweep')",
+    )
+
+
 AuditActor = Annotated[
-    Union[HumanActor, AutomationActor],
+    Union[HumanActor, AutomationActor, SystemActor],
     Field(discriminator="kind"),
 ]
-"""Discriminated union — ``kind=human`` → :class:`HumanActor`, ``kind=automation`` → :class:`AutomationActor`."""
+"""Discriminated union — ``kind=human`` → :class:`HumanActor`, ``kind=automation`` → :class:`AutomationActor`, ``kind=system`` → :class:`SystemActor`."""
 
 
 class DecisionArtifactType(StrEnum):
@@ -753,6 +847,12 @@ class DecisionArtifactType(StrEnum):
     CASE_RETURN_SUMMARY = "case_return_summary"
     RISK_ARBITRATION = "risk_arbitration"
     APPROVAL_DECISION = "approval_decision"
+    #: Deterministic gate evaluation — the trigger conditions that fired an
+    #: unattended playbook, each with the value observed on the signal at
+    #: trigger time. The decision artifact for a run that no human and no
+    #: model decided : without it, ``AuditRow.decision_ref`` on an
+    #: auto-triggered row would have nothing truthful to point at.
+    PLAYBOOK_GATE_EVALUATION = "playbook_gate_evaluation"
 
 
 class DecisionRef(SpecModel):
@@ -783,12 +883,21 @@ class TriggerSignalKind(StrEnum):
     action without an upstream alert (e.g. responding to a phone
     call from a user) is a legitimate flow and the audit row MUST
     NOT pretend it had a signal.
+
+    ``investigation_finding`` is the only kind whose signal is a
+    CONCLUSION rather than an observation. ``alert`` says an action
+    followed a signal; ``investigation_finding`` says which reviewed
+    finding motivated it, and its ``content_hash`` is taken over the
+    frozen finding — so an auditor asking "why did you isolate that
+    host" is answered by the chain rather than by a narrative, and a
+    finding edited afterwards no longer hashes to what was signed.
     """
 
     OCSF_EVENT = "ocsf_event"
     ALERT = "alert"
     IOC = "ioc"
     PLAYBOOK_TICK = "playbook_tick"
+    INVESTIGATION_FINDING = "investigation_finding"
     MANUAL = "manual"
 
 
@@ -1045,6 +1154,7 @@ class SignedAuditRow(SpecModel):
 
 __all__ = [
     "ABI_VERSION",
+    "AccountForm",
     "AgentCompositionKind",
     "AiAgentRef",
     "ApprovalDescriptor",
@@ -1071,10 +1181,12 @@ __all__ = [
     "ExecutionPhase",
     "FailureCategory",
     "FreshnessHint",
+    "HostForm",
     "HumanActor",
     "IngressDelivery",
     "IngressDescriptor",
     "LifecycleDescriptor",
+    "NamingDescriptor",
     "ResponseActionId",
     "ResponseActionResult",
     "ResponseActionReversibility",
@@ -1083,6 +1195,7 @@ __all__ = [
     "ResponseSubject",
     "SelectorRepresentation",
     "SignedAuditRow",
+    "SystemActor",
     "TriggerSignalKind",
     "TriggerSignalRef",
 ]

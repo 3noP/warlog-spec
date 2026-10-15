@@ -245,7 +245,8 @@
         "closure_summary",
         "case_return_summary",
         "risk_arbitration",
-        "approval_decision"
+        "approval_decision",
+        "playbook_gate_evaluation"
       ],
       "title": "DecisionArtifactType",
       "type": "string"
@@ -310,7 +311,8 @@
         "not_found",
         "state_conflict",
         "transient",
-        "policy"
+        "policy",
+        "unknown"
       ],
       "title": "FailureCategory",
       "type": "string"
@@ -361,6 +363,8 @@
         "host.stop",
         "host.start",
         "host.delete",
+        "host.wipe",
+        "file.detonate",
         "iam.role_detach",
         "iam.role_attach",
         "iam.credentials_disable",
@@ -389,7 +393,10 @@
         "cert.revoke",
         "alert.acknowledge",
         "case.update_status",
-        "playbook.trigger"
+        "playbook.trigger",
+        "host.run_script",
+        "host.scan",
+        "user.revoke_oauth_grant"
       ],
       "title": "ResponseActionId",
       "type": "string"
@@ -489,13 +496,44 @@
       "title": "SelectorRepresentation",
       "type": "string"
     },
+    "SystemActor": {
+      "additionalProperties": false,
+      "description": "A deterministic platform mechanism initiated this action.\n\nThe third actor kind exists because the first two cannot describe\nan unattended, rule-driven execution honestly. A published\nplaybook whose trigger conditions matched an incoming alert acts\nwith no human in the loop (so :class:`HumanActor` would attribute\na machine action to a person) and with no model in the loop (so\n:class:`AutomationActor`, whose :class:`AiAgentRef` is REQUIRED\nprecisely to prove *which model* authorized the action, would\nhave to fabricate the EU AI Act traceability anchor it exists to\ncarry).\n\nUse ``system`` when the decision was made by evaluating\ndeterministic configuration \u2014 trigger conditions, a scheduled\nsweep, a policy threshold. Use ``automation`` the moment a model\nchose the action ; the distinction is what lets an auditor filter\n\"actions an AI decided\" from \"actions our rules decided\", and\ncollapsing the two makes both claims unfalsifiable.\n\n``mechanism`` names the deterministic decider (``playbook``,\n``scheduled_sweep``, \u2026) so a consumer can tell WHICH mechanism\nwithout parsing ``id``.",
+      "properties": {
+        "kind": {
+          "const": "system",
+          "default": "system",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable identifier of the mechanism instance (playbook id, sweep name)",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "mechanism": {
+          "description": "Class of deterministic decider (e.g. 'playbook', 'scheduled_sweep')",
+          "minLength": 1,
+          "title": "Mechanism",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "mechanism"
+      ],
+      "title": "SystemActor",
+      "type": "object"
+    },
     "TriggerSignalKind": {
-      "description": "What kind of upstream signal motivated an action.\n\n``manual`` is a first-class value \u2014 an analyst initiating an\naction without an upstream alert (e.g. responding to a phone\ncall from a user) is a legitimate flow and the audit row MUST\nNOT pretend it had a signal.",
+      "description": "What kind of upstream signal motivated an action.\n\n``manual`` is a first-class value \u2014 an analyst initiating an\naction without an upstream alert (e.g. responding to a phone\ncall from a user) is a legitimate flow and the audit row MUST\nNOT pretend it had a signal.\n\n``investigation_finding`` is the only kind whose signal is a\nCONCLUSION rather than an observation. ``alert`` says an action\nfollowed a signal; ``investigation_finding`` says which reviewed\nfinding motivated it, and its ``content_hash`` is taken over the\nfrozen finding \u2014 so an auditor asking \"why did you isolate that\nhost\" is answered by the chain rather than by a narrative, and a\nfinding edited afterwards no longer hashes to what was signed.",
       "enum": [
         "ocsf_event",
         "alert",
         "ioc",
         "playbook_tick",
+        "investigation_finding",
         "manual"
       ],
       "title": "TriggerSignalKind",
@@ -623,7 +661,8 @@
       "discriminator": {
         "mapping": {
           "automation": "#/$defs/AutomationActor",
-          "human": "#/$defs/HumanActor"
+          "human": "#/$defs/HumanActor",
+          "system": "#/$defs/SystemActor"
         },
         "propertyName": "kind"
       },
@@ -633,6 +672,9 @@
         },
         {
           "$ref": "#/$defs/AutomationActor"
+        },
+        {
+          "$ref": "#/$defs/SystemActor"
         }
       ],
       "title": "Actor"

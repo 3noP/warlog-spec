@@ -12,11 +12,9 @@ Actions covered :
 - :data:`ResponseActionId.EMAIL_BLOCK_SENDER`   → POST /v2/orgs/{orgId}/blocked_senders
 - :data:`ResponseActionId.EMAIL_UNBLOCK_SENDER` → DELETE blocked_senders entry
 
-The Proofpoint audit (see ``docs/canon-migration/12-email-gap-audit.md``)
-surfaced 3 gaps in the email family — sender-side block/unblock and
-quarantine release — all cross-validated against M365 Defender for
-Email, Mimecast, Cisco Email Security, and Google Workspace before
-admission.
+Sender-side block/unblock and quarantine release joined the email
+family after cross-validation against M365 Defender for Email,
+Mimecast, Cisco Email Security, and Google Workspace.
 
 **Auth model :** Proofpoint uses HTTP Basic auth with a Service
 Principal (TAP API) and a separate API key for TRAP. Both flows are

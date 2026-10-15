@@ -26,7 +26,7 @@ const HEX_RE = /^[0-9a-f]+$/;
 const HEX64_MESSAGE = "must be lowercase hex sha256 (64 chars)";
 
 // ============================================================================
-// Response action catalog — 49 canonical actions
+// Response action catalog — 51 canonical actions
 // ============================================================================
 
 export const ResponseActionId = z.enum([
@@ -38,6 +38,10 @@ export const ResponseActionId = z.enum([
   "host.stop",
   "host.start",
   "host.delete",
+  // First-class MDM erase (4/4 vendors), and sandbox detonation: estate
+  // unchanged, sample disclosure unrecallable.
+  "host.wipe",
+  "file.detonate",
   "process.kill",
   "process.suspend",
   "file.quarantine",
@@ -88,6 +92,9 @@ export const ResponseActionId = z.enum([
   "alert.acknowledge",
   "case.update_status",
   "playbook.trigger",
+  "host.run_script",
+  "host.scan",
+  "user.revoke_oauth_grant",
 ]);
 export type ResponseActionIdValue = z.infer<typeof ResponseActionId>;
 
@@ -155,6 +162,12 @@ export const FailureCategory = z.enum([
   "state_conflict",
   "transient",
   "policy",
+  // For producers that are NOT vendor connectors. A connector maps its
+  // vendor's error taxonomy and always knows which of the five applies; a
+  // platform action registry reports THAT a step failed, never why in vendor
+  // terms. Without this value such a producer must assert a class it cannot
+  // support ("transient" invites a retry of a possibly irreversible action).
+  "unknown",
 ]);
 export type FailureCategoryValue = z.infer<typeof FailureCategory>;
 
@@ -221,6 +234,20 @@ export const LifecycleDescriptor = z.object({
 });
 export type LifecycleDescriptor = z.infer<typeof LifecycleDescriptor>;
 
+// RFC-0007: the forms a connector's tool names an account and a host in,
+// preferred first. An empty list states nothing.
+export const AccountForm = z.enum(["upn", "email", "sam", "domain_sam", "object_id"]);
+export type AccountForm = z.infer<typeof AccountForm>;
+
+export const HostForm = z.enum(["device_id", "short", "fqdn"]);
+export type HostForm = z.infer<typeof HostForm>;
+
+export const NamingDescriptor = z.object({
+  account: z.array(AccountForm).default([]),
+  host: z.array(HostForm).default([]),
+});
+export type NamingDescriptor = z.infer<typeof NamingDescriptor>;
+
 export const ConnectorCompat = z.object({
   warlogSpecMin: z.string(),
   warlogSpecMax: z.string(),
@@ -253,6 +280,7 @@ export const ConnectorCapability = z.object({
     supportsCredentialRotation: false,
     supportsPausedState: false,
   }),
+  naming: NamingDescriptor.default({ account: [], host: [] }),
   compat: ConnectorCompat,
 });
 export type ConnectorCapability = z.infer<typeof ConnectorCapability>;
@@ -376,6 +404,10 @@ export const DecisionArtifactType = z.enum([
   "case_return_summary",
   "risk_arbitration",
   "approval_decision",
+  // Deterministic gate evaluation — the trigger conditions that fired an
+  // unattended playbook, each with the value observed on the signal at trigger
+  // time. The decision artifact for a run that no human and no model decided.
+  "playbook_gate_evaluation",
 ]);
 export type DecisionArtifactTypeValue = z.infer<typeof DecisionArtifactType>;
 
@@ -391,6 +423,11 @@ export const TriggerSignalKind = z.enum([
   "alert",
   "ioc",
   "playbook_tick",
+  // The only kind whose signal is a CONCLUSION rather than an observation:
+  // which reviewed finding motivated the action. Its contentHash is taken
+  // over the frozen finding, so a finding edited afterwards no longer
+  // hashes to what was signed.
+  "investigation_finding",
   "manual",
 ]);
 export type TriggerSignalKindValue = z.infer<typeof TriggerSignalKind>;
@@ -477,7 +514,7 @@ export const AiAgentRef: z.ZodType<AiAgentRef> = z.lazy(() =>
 );
 
 // ============================================================================
-// AuditActor — discriminated union HumanActor | AutomationActor
+// AuditActor — discriminated union HumanActor | AutomationActor | SystemActor
 // ============================================================================
 
 export const HumanActor = z.object({
@@ -493,7 +530,32 @@ export const AutomationActor = z.object({
 });
 export type AutomationActor = z.infer<typeof AutomationActor>;
 
-export const AuditActor = z.discriminatedUnion("kind", [HumanActor, AutomationActor]);
+/**
+ * A deterministic platform mechanism initiated this action.
+ *
+ * The third kind exists because the first two cannot describe an unattended,
+ * rule-driven execution honestly. A published playbook whose trigger conditions
+ * matched acts with no human in the loop (so HumanActor would attribute a
+ * machine action to a person) and with no model in the loop (so AutomationActor,
+ * whose `agent` is REQUIRED precisely to prove WHICH model authorized the
+ * action, would have to fabricate the EU AI Act traceability anchor it exists to
+ * carry).
+ *
+ * Keeping `system` distinct from `automation` is what lets an auditor separate
+ * "actions an AI decided" from "actions our rules decided".
+ */
+export const SystemActor = z.object({
+  kind: z.literal("system").default("system"),
+  id: z.string().min(1),
+  mechanism: z.string().min(1),
+});
+export type SystemActor = z.infer<typeof SystemActor>;
+
+export const AuditActor = z.discriminatedUnion("kind", [
+  HumanActor,
+  AutomationActor,
+  SystemActor,
+]);
 export type AuditActor = z.infer<typeof AuditActor>;
 
 // ============================================================================

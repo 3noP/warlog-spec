@@ -1,0 +1,235 @@
+{
+  "$defs": {
+    "A2AAttestationPayload": {
+      "additionalProperties": false,
+      "description": "The signed claim: which agent, for whom, bound to which request.\n\n``agent`` reuses :class:`~warlog_spec.provider_abi.AiAgentRef` so the full\ndelegation tree (``sub_agents`` recursive, ``composition_kind``,\n``tools_manifest_hash``) travels verbatim and projects 1:1 onto an\n:class:`~warlog_spec.provider_abi.AutomationActor` on the audit chain.",
+      "properties": {
+        "agent": {
+          "$ref": "#/$defs/AiAgentRef",
+          "description": "Verifiable identity of the calling agent (and its delegation chain)."
+        },
+        "agentId": {
+          "description": "Stable A2A identity of the agent (a did:web or URL). The subject the key_id is expected to belong to; the gateway binds the resolved public key to this id in its registry.",
+          "minLength": 1,
+          "title": "Agentid",
+          "type": "string"
+        },
+        "audience": {
+          "description": "Target the attestation is minted for (gateway / tenant URI). The verifier rejects a mismatch so an attestation captured by one recipient cannot be presented to another.",
+          "minLength": 1,
+          "title": "Audience",
+          "type": "string"
+        },
+        "issuedAt": {
+          "description": "When the attestation was minted (aware UTC). Checked against the freshness window.",
+          "format": "date-time",
+          "title": "Issuedat",
+          "type": "string"
+        },
+        "nonce": {
+          "description": "Single-use value for anti-replay. Signed here so the gateway can trust it after signature verification, then enforce uniqueness in its own (Redis) seen-cache within the freshness window.",
+          "minLength": 1,
+          "title": "Nonce",
+          "type": "string"
+        },
+        "requestBinding": {
+          "description": "sha256 hex of (method || '|' || canonical_json_bytes(strip_meta(params))). Binds the attestation to THIS exact JSON-RPC call so it cannot be spliced onto a different request. Compute via compute_request_binding().",
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Requestbinding",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent",
+        "agentId",
+        "audience",
+        "issuedAt",
+        "nonce",
+        "requestBinding"
+      ],
+      "title": "A2AAttestationPayload",
+      "type": "object"
+    },
+    "A2ASignature": {
+      "additionalProperties": false,
+      "description": "Detached signature envelope for an :class:`A2AAttestationPayload`.\n\nMirrors :class:`~warlog_spec.provider_abi.AuditAttestation` but omits\n``prev_row_hash`` : an attestation is a standalone claim, not a link in an\nappend-only chain. ``key_id`` follows RFC-0004 semantics (a URI / DID\nresolving to the Ed25519 **public** key; the verifier fetches it out of\nband \u2014 for warlog-mcp, from the tenant ``AgentKey`` registry).",
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519",
+          "default": "Ed25519",
+          "description": "Signature algorithm. Ed25519 only in v1 (RFC-0004 asymmetric path).",
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "signatureValue": {
+          "description": "Hex-encoded Ed25519 signature over the domain-separated canonical payload bytes (64 bytes -> 128 hex).",
+          "maxLength": 128,
+          "minLength": 128,
+          "pattern": "^[0-9a-f]+$",
+          "title": "Signaturevalue",
+          "type": "string"
+        },
+        "keyId": {
+          "description": "Reference resolving to the Ed25519 public key (RFC-0004). Common patterns: 'did:web:acme.example#key-ed25519-1', 'https://keys.example.org/ed25519/v3.pem'. The gateway resolves it against its tenant agent-key registry.",
+          "minLength": 1,
+          "title": "Keyid",
+          "type": "string"
+        },
+        "canonicalizationFormat": {
+          "const": "v1",
+          "default": "v1",
+          "description": "Canonical-bytes format identifier, decoupled from the payload's spec_version.",
+          "title": "Canonicalizationformat",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signatureValue",
+        "keyId"
+      ],
+      "title": "A2ASignature",
+      "type": "object"
+    },
+    "AgentCompositionKind": {
+      "description": "Soft taxonomy of agent composition patterns.\n\nSet on :class:`AiAgentRef.composition_kind` to tag the\narchitectural pattern this agent fits. Open via additive RFCs\nwhen new patterns crystallize.",
+      "enum": [
+        "single",
+        "orchestrator",
+        "delegated",
+        "tool_using",
+        "retrieval_augmented",
+        "composite"
+      ],
+      "title": "AgentCompositionKind",
+      "type": "string"
+    },
+    "AiAgentRef": {
+      "additionalProperties": false,
+      "description": "Identity of an automated agent that initiated an action.\n\nRequired when :class:`AutomationActor` is the actor. The shape is\ndesigned for EU AI Act traceability : an auditor can recompute\nwhy an agent chose this action from the model identity, the\npinned system prompt, and the run-scoped reasoning artifact.\n\n``system_prompt_hash`` is sha256 of the canonical system prompt\nbytes \u2014 chains the agent's policy to the action. ``agent_run_id``\ngroups all actions emitted in one ReAct loop / one autonomous\ndecision-cycle. ``reasoning_artifact_ref`` optionally points at a\npersisted CoT / tool-call trace (the operator decides where it\nlives ; the ref is opaque).\n\nRFC-0002 additive fields (all optional) extend attribution to\nmulti-agent compositions, tool-using agents, and RAG-grounded\nagents :\n\n- ``sub_agents`` \u2014 when an orchestrator delegated to peers /\n  children, the chain of sub-agents that participated. Recursive.\n- ``tools_manifest_hash`` \u2014 sha256 of the canonical-bytes\n  serialization of the tool / MCP-server manifest available at\n  decision time. Lets an auditor confirm no out-of-band tool was\n  injected.\n- ``retrieval_context_ref`` \u2014 opaque ref to the RAG context the\n  agent had at decision time (vector-store query id, document\n  set hash, \u2026).\n- ``composition_kind`` \u2014 soft taxonomy tag, defaults to ``SINGLE``\n  / absent for backward compatibility.",
+      "properties": {
+        "model": {
+          "description": "Model identifier (e.g. 'gpt-4o', 'claude-opus-4-7')",
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "modelVersion": {
+          "description": "Pinned model version or build",
+          "minLength": 1,
+          "title": "Modelversion",
+          "type": "string"
+        },
+        "systemPromptHash": {
+          "description": "sha256 of the canonical system prompt bytes (64 hex chars)",
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Systemprompthash",
+          "type": "string"
+        },
+        "agentRunId": {
+          "description": "UUID grouping all actions for one agent decision-cycle",
+          "minLength": 1,
+          "title": "Agentrunid",
+          "type": "string"
+        },
+        "reasoningArtifactRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Opaque reference to the persisted reasoning artifact (CoT, tool-call trace). Operator-defined storage. Optional but strongly recommended for AI Act compliance.",
+          "title": "Reasoningartifactref"
+        },
+        "subAgents": {
+          "description": "Chain of sub-agents that participated in the decision. Recursive. Empty / absent means single-agent attribution.",
+          "items": {
+            "$ref": "#/$defs/AiAgentRef"
+          },
+          "title": "Subagents",
+          "type": "array"
+        },
+        "toolsManifestHash": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sha256 of the canonical-bytes serialization of the tool / MCP-server manifest available at decision time. Lets an auditor confirm the agent's tool surface was the expected one.",
+          "title": "Toolsmanifesthash"
+        },
+        "retrievalContextRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Opaque reference to the retrieval context (RAG snapshot, vector-store query id, document set hash) the agent had at decision time.",
+          "title": "Retrievalcontextref"
+        },
+        "compositionKind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentCompositionKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Soft taxonomy tag for the agent's composition pattern. None / absent means single-agent (legacy v1 attribution)."
+        }
+      },
+      "required": [
+        "model",
+        "modelVersion",
+        "systemPromptHash",
+        "agentRunId"
+      ],
+      "title": "AiAgentRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The full attestation envelope carried in transport ``_meta``.",
+  "properties": {
+    "specVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/A2AAttestationPayload"
+    },
+    "signature": {
+      "$ref": "#/$defs/A2ASignature"
+    }
+  },
+  "required": [
+    "payload",
+    "signature"
+  ],
+  "title": "A2AAttestation",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3noP.github.io/warlog-spec/schemas/draft/provider-abi/A2AAttestation.json"
+}

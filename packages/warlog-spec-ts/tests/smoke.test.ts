@@ -11,7 +11,9 @@ import {
   AutomationActor,
   ComplianceScope,
   DecisionRef,
+  EntityType,
   HumanActor,
+  NormalizedEntity,
   ResponseActionId,
   ResponseActionResult,
   ResponseSubject,
@@ -27,7 +29,7 @@ describe("Top-level constants", () => {
   });
 
   it("SPEC_VERSION matches Python package version", () => {
-    expect(SPEC_VERSION).toEqual("0.1.0");
+    expect(SPEC_VERSION).toEqual("0.2.0");
   });
 });
 
@@ -80,8 +82,8 @@ describe("Zod schemas — discriminated AuditActor", () => {
 });
 
 describe("ResponseActionId catalog", () => {
-  it("includes the canonical 49 actions", () => {
-    expect(ResponseActionId.options.length).toEqual(49);
+  it("includes the canonical 54 actions", () => {
+    expect(ResponseActionId.options.length).toEqual(54);
   });
 
   it("includes host.isolate, user.revoke_tokens, key.rotate", () => {
@@ -298,3 +300,23 @@ describe("RFC-0002 — AiAgentRef multi-agent extensions", () => {
 // Bundle shape tests removed — TriageBundle and its siblings are now
 // backend-internal (Warlog product-specific UI projection), not part of
 // the open spec. See packages/warlog-spec-py/CHANGELOG.md > "Out of scope".
+
+describe("Entity taxonomy", () => {
+  // `warlog_spec.enums.EntityType`, value for value: an entity one package
+  // emits is one the other (and the platform's database) accepts.
+  const PYTHON = [
+    "host", "user", "ip", "domain", "url", "file", "process", "email",
+    "registry", "vulnerability", "certificate", "cloud_resource", "other",
+  ];
+
+  it("matches Python's", () => {
+    expect(Object.values(EntityType)).toEqual(PYTHON);
+  });
+
+  it("accepts every canonical type on an entity, and none other", () => {
+    for (const entityType of PYTHON) {
+      expect(NormalizedEntity.safeParse({ entityType, value: "x" }).success).toBe(true);
+    }
+    expect(NormalizedEntity.safeParse({ entityType: "hash", value: "x" }).success).toBe(false);
+  });
+});

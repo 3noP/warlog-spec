@@ -11,6 +11,72 @@
 > for transparency — none of it was ever published, so no external
 > consumer is downgraded.
 
+## [Unreleased]
+
+## [0.2.0] — 2026-10-15
+
+### Added
+- `warlog_spec.a2a`: `A2AAttestation`, `A2AAttestationPayload`,
+  `A2ASignature`, a per-call agent identity claim carried in JSON-RPC
+  `_meta` or A2A `Message.metadata`, with canonical bytes, a request
+  binding over the method and the canonical params, and Ed25519 sign /
+  verify behind the optional `warlog-spec[crypto]` extra. Byte-equivalent
+  to `@warlog/spec`.
+- `warlog_spec.scan_verdict`: `ScanVerdict`, `ScanVerdictPayload`,
+  `ScanVerdictSignature`, `compute_content_binding`: a signed, portable
+  record of what a content scanner saw, bound to the scanned bytes by a
+  domain-separated sha256. Scores are integer thousandths (`score_milli`,
+  `threshold_milli`) so canonical bytes agree across languages.
+  `mcp_tool_manifest` is among the scan surfaces: an MCP server's
+  advertised tool descriptions, whose `content` is the canonical tool-list
+  bytes, since MCP fixes neither the order of the `tools` array nor the
+  serialisation of each entry.
+- `PlaybookGateEvaluation`, `PlaybookGateEvaluationPayload`,
+  `MatchedTriggerCondition`: the decision artifact for an action fired by a
+  playbook's trigger conditions, each paired with the value observed on the
+  signal at trigger time; `conditions_source_hash` pins the evaluated
+  configuration. `DecisionArtifactType.PLAYBOOK_GATE_EVALUATION` added.
+- `SystemActor` (`AuditActor.kind = "system"`): an action decided by
+  deterministic configuration rather than by a person or a model.
+  Producer-additive; consumers should tolerate unknown `kind` values.
+- `TriggerSignalKind.INVESTIGATION_FINDING`: the reviewed finding that
+  motivated the action, with `content_hash` over the frozen finding.
+- `FailureCategory.UNKNOWN`: for producers that are not vendor connectors
+  and cannot support one of the five vendor-facing classes.
+- `ResponseActionId.HOST_RUN_SCRIPT` (`host.run_script`), `HOST_SCAN`
+  (`host.scan`), `USER_REVOKE_OAUTH_GRANT` (`user.revoke_oauth_grant`),
+  `HOST_WIPE` (`host.wipe`) and `FILE_DETONATE` (`file.detonate`), each
+  cross-validated against three or more major vendors before admission.
+  `host.wipe` is DESTRUCTIVE with manager approval and two reviewers;
+  `file.detonate` is VARIES with analyst approval, since the estate is
+  unchanged while the sample's disclosure cannot be recalled. Catalog
+  49 → 54; additive within ABI 1.0.
+- `NamingDescriptor`, `AccountForm`, `HostForm`; `ConnectorCapability.naming`:
+  the forms in which a connector's tool names an account and a host,
+  preferred first. Both lists default to empty, which states nothing.
+- `EntityType.CLOUD_RESOURCE` (`cloud_resource`): what a cloud provider's
+  audit names an action on, keyed by the provider's own identifier. The
+  taxonomy is pinned in both suites (`tests/test_entity_taxonomy.py`).
+- `ClaimRef`, `HumanSignature`, and `RiskArbitrationPayload.decision`,
+  `.request_ref`, `.claims`, `.signature` (all optional): a per-request
+  arbitration signed by the person's own Ed25519 key over the exact
+  statement text, with the content hash of each claim the signer read.
+  `ResponseActionRequestRef` is declared before `RiskArbitrationPayload`.
+- `TriageProposalPayload.uncertainties` (`list[str]`, default `[]`): what
+  the proposal is still uncertain about.
+- `RuledOutHypothesis` (`hypothesis` + `rationale`) and
+  `InvestigationSummaryProposalPayload.ruled_out_hypotheses` (default `[]`):
+  hypotheses considered and discarded, with rationale.
+- Level 2 conformance: `warlog_spec.conformance.PRODUCERS` covers 21 types
+  (`a2a-attestation`, `scan-verdict` and `playbook-gate-evaluation` added)
+  and a test asserts it equals the runner's required set.
+
+### Changed
+- `file.quarantine`, `hash.block`, `email.block_sender` and
+  `user.group_remove` default to analyst approval, as REVERSIBLE acts do;
+  the reversible acts that grant (`iam.role_attach`,
+  `iam.credentials_enable`, `key.enable`, `bucket.unlock`) stay senior.
+
 ## [0.1.0] — 2026-05-20 — first public PyPI release
 
 First artifact published to PyPI. Source moved from a private monorepo

@@ -14,7 +14,7 @@
  *     // ...
  */
 
-export const SPEC_VERSION = "0.1.0";
+export const SPEC_VERSION = "0.2.0";
 export const ABI_VERSION = "1.0";
 
 export * from "./enums.js";
@@ -54,3 +54,31 @@ export {
   mapOcsfDetectionFinding,
 } from "./ocsf.js";
 export type { OcsfDetectionFindingMapping } from "./ocsf.js";
+export {
+  A2A_ATTESTATION_VERSION,
+  A2A_META_KEY,
+  A2A_EXTENSION_URI,
+  A2AVerificationError,
+  A2ASignature,
+  A2AAttestationPayload,
+  A2AAttestation,
+  stripMeta,
+  computeRequestBinding,
+  canonicalizeA2aV1,
+  generateEd25519KeypairPem,
+  signA2aAttestation,
+  verifyA2aAttestation,
+} from "./a2a.js";
+export type { VerifyOptions } from "./a2a.js";
+export {
+  SCAN_VERDICT_VERSION,
+  SCAN_SURFACES,
+  ScanVerdictError,
+  ScanVerdictSignature,
+  ScanVerdictPayload,
+  ScanVerdict,
+  computeContentBinding,
+  canonicalizeScanVerdictV1,
+  signScanVerdict,
+  verifyScanVerdict,
+} from "./scan-verdict.js";

@@ -46,6 +46,27 @@ class AuditChainBroken(Exception):
     """Raised when chain integrity verification fails."""
 
 
+def canonical_json_bytes(obj: object) -> bytes:
+    """Canonical JSON bytes: sorted keys, compact separators, UTF-8, no ASCII escaping.
+
+    The shared canonicalization primitive. :func:`canonicalize_v1` wraps this
+    for :class:`AuditRow`; other signed shapes (e.g. the A2A agent attestation
+    in :mod:`warlog_spec.a2a`) reuse it so the byte discipline is identical
+    across every signed artifact and across the Python / TypeScript
+    implementations.
+
+    ``obj`` MUST already be JSON-native — the output of
+    ``model.model_dump(mode="json", by_alias=True)``. This function only
+    canonicalizes a plain JSON value; it does not serialize Pydantic models.
+    """
+    return json.dumps(
+        obj,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+
+
 def canonicalize_v1(row: AuditRow) -> bytes:
     """v1 canonicalization: sorted-keys JSON of ``model_dump(mode="json")``.
 
@@ -85,12 +106,7 @@ def canonicalize_v1(row: AuditRow) -> bytes:
     See ``test_canonicalization_immune_to_delimiter_injection`` for
     the pin test.
     """
-    return json.dumps(
-        row.model_dump(mode="json", by_alias=True),
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    ).encode("utf-8")
+    return canonical_json_bytes(row.model_dump(mode="json", by_alias=True))
 
 
 def compute_genesis(tenant_id: str, secret: bytes) -> str:
@@ -119,6 +135,7 @@ def compute_signature(
 __all__ = [
     "CANONICALIZATION_FORMAT_V1",
     "AuditChainBroken",
+    "canonical_json_bytes",
     "canonicalize_v1",
     "compute_genesis",
     "compute_signature",

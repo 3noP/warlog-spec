@@ -115,6 +115,8 @@ export const TriageProposalPayload = z.object({
   shouldCreateCase: z.boolean().default(false),
   priorityHint: CasePriorityEnum.default("unknown"),
   summary: z.string(),
+  // What the proposal is still uncertain about.
+  uncertainties: z.array(z.string()).default([]),
 });
 export type TriageProposalPayload = z.infer<typeof TriageProposalPayload>;
 
@@ -180,6 +182,13 @@ export type PlaybookCandidateProposal = z.infer<typeof PlaybookCandidateProposal
 // InvestigationSummaryProposal
 // ============================================================================
 
+// A hypothesis considered and ruled out, with the reasoning that eliminated it.
+export const RuledOutHypothesis = z.object({
+  hypothesis: z.string(),
+  rationale: z.string(),
+});
+export type RuledOutHypothesis = z.infer<typeof RuledOutHypothesis>;
+
 export const InvestigationSummaryProposalPayload = z.object({
   summary: z.string(),
   hypothesis: z.string().nullable().default(null),
@@ -187,6 +196,8 @@ export const InvestigationSummaryProposalPayload = z.object({
   impactAssessment: z.string().nullable().default(null),
   nextSteps: z.array(z.string()).default([]),
   unresolvedQuestions: z.array(z.string()).default([]),
+  // Hypotheses considered and discarded, with rationale (Bundle Chain §4/§6.2).
+  ruledOutHypotheses: z.array(RuledOutHypothesis).default([]),
   confidence: ArtifactConfidence.default({ score: null, band: "unknown" }),
 });
 export type InvestigationSummaryProposalPayload = z.infer<

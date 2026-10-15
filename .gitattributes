@@ -1,0 +1,5 @@
+# LF everywhere: the spec is read by Python and TypeScript toolchains, and its
+# schemas are hashed and compared byte for byte. A checkout on Windows keeps LF.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
